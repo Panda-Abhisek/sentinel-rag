@@ -20,6 +20,7 @@ class IndexService:
     @staticmethod
     def process_and_index_pdf(
         file_path: str,
+        original_filename: str,
         collection_name: str = settings.QDRANT_COLLECTION,
         qdrant_url: str = settings.QDRANT_URL,
         qdrant_api_key: Optional[str] = None
@@ -45,7 +46,7 @@ class IndexService:
         
         path = Path(file_path)
         for index, chunk in enumerate(chunked_documents):
-            chunk.metadata["filename"] = path.name
+            chunk.metadata["filename"] = original_filename
             chunk.metadata["document_name"] = path.stem
             chunk.metadata["indexed_at"] = datetime.now(timezone.utc).isoformat()
             chunk.metadata["project"] = settings.PROJECT_NAME
@@ -71,7 +72,7 @@ class IndexService:
         logger.info("✓ Ingestion complete! Data is indexed and ready to query.")
         return IndexResult(
             status="success",
-            filename=path.name,
+            filename=original_filename,
             collection=collection_name,
             chunks=len(chunked_documents),
         )

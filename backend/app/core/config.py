@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     QDRANT_COLLECTION: str = "sentinel_rag"
     QDRANT_URL: str = f"http://{QDRANT_HOST}:{QDRANT_PORT}"
     
+    EMBEDDING_DEVICE: str = "cuda"
     EMBEDDING_MODEL: str = "BAAI/bge-small-en-v1.5"
     LLM_MODEL: str = "qwen/qwen3-32b"
     
@@ -17,6 +18,8 @@ class Settings(BaseSettings):
     CHUNK_OVERLAP: int = 150
     
     DEBUG: bool = True
+    
+    UPLOAD_DIR: str = "temp_uploads"
     
     class Config:
         env_file = ".env"
