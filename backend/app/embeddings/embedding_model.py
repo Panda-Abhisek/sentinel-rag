@@ -3,7 +3,7 @@ from app.core.config import settings
 import logging
 
 logger = logging.getLogger(__name__)
-_embeddings = None
+_embeddings: HuggingFaceEmbeddings | None = None
 
 def get_bge_embeddings() -> HuggingFaceEmbeddings:
     """
@@ -12,7 +12,13 @@ def get_bge_embeddings() -> HuggingFaceEmbeddings:
     """
     global _embeddings
     if _embeddings is None:
-        logger.info("Initializing embedding model...")
+        logger.info(
+            "Loading embedding model '%s' on %s.",
+            settings.EMBEDDING_MODEL,
+            settings.EMBEDDING_DEVICE,
+        )
+        logger.info("Embedding model loaded successfully.")
+        
         _embeddings = HuggingFaceEmbeddings(
             model_name=settings.EMBEDDING_MODEL,
             model_kwargs={'device': settings.EMBEDDING_DEVICE},
