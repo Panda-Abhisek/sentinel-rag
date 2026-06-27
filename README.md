@@ -8,7 +8,7 @@ SentinelRAG is designed to go beyond a basic RAG implementation. Instead of simp
 
 # 🚀 Current Status
 
-**Version:** `v0.1.0`
+**Version:** `v0.2.0`
 
 ## ✅ Week 1 Completed
 
@@ -24,10 +24,25 @@ SentinelRAG is designed to go beyond a basic RAG implementation. Instead of simp
 * Configuration using `.env`
 * Service-oriented architecture
 
+## ✅ Week 2 Completed
+* Complete Retrieval-Augmented Generation pipeline
+* Qdrant semantic retrieval
+* Groq-powered grounded answering
+* Source citation support
+* Modular service-oriented architecture
+* Production logging
+* Configurable retrieval parameters
+* Prompt engineering improvements
+* Performance optimizations
+
+### Performance
+* First request: Cold start
+* Subsequent requests: ~200ms end-to-end
+
 ---
 
 # 🏗️ Architecture
-
+## Ingestion Pipeline
 ```
                    Upload PDF
                         │
@@ -52,7 +67,31 @@ SentinelRAG is designed to go beyond a basic RAG implementation. Instead of simp
                         ▼
               Qdrant Vector Store
 ```
-
+## Retrieval Pipeline
+```
+                   Question
+                        │
+                        ▼
+                Embedding Model
+                        │
+                        ▼
+             Qdrant Similarity Search
+                        │
+                        ▼
+                Context Builder
+                        │
+                        ▼
+                  Prompt Builder
+                        │
+                        ▼
+                    Groq LLM
+                        │
+                        ▼
+                  Grounded Answer
+                        │
+                        ▼
+                  Source Citations
+```
 ---
 
 # 📁 Project Structure
@@ -63,8 +102,10 @@ backend/
 app/
 │
 ├── api/
+|     ├── dependencies.py
 │     ├── document_routes.py
 │     └── health_routes.py
+|     └── retrieval_routes.py
 │
 ├── core/
 │     ├── config.py
@@ -75,10 +116,13 @@ app/
 │
 ├── schemas/
 │     └── index.py
+│     └── retrieval.py
 │
 ├── services/
 │     ├── document_loader.py
 │     ├── text_splitter.py
+│     ├── llm_service.py
+│     ├── retrieval_service.py
 │     └── index_service.py
 │
 ├── utils/
@@ -88,6 +132,9 @@ app/
 │     └── qdrant_client.py
 │
 ├── rag/
+|     ├── context_builder.py
+|     ├── prompt_builder.py
+|     ├── source_mapper.py
 │
 └── main.py
 ```
@@ -185,6 +232,32 @@ Uploads a PDF, generates embeddings, and stores vectors inside Qdrant.
 
 ```
 GET /health
+```
+
+---
+
+---
+
+## Retrieve Answer
+
+```
+POST /query
+```
+Retrievs answers
+### Response
+
+```json
+{
+  "answer": "string",
+  "sources": [
+    {
+      "page": 0,
+      "source": "string",
+      "score": 0,
+      "content": "string"
+    }
+  ]
+}
 ```
 
 ---
