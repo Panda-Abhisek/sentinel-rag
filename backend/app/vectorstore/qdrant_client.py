@@ -9,6 +9,7 @@ from langchain_core.embeddings import Embeddings
 from langchain_qdrant import QdrantVectorStore
 
 from app.core.config import settings
+from app.embeddings.embedding_model import get_bge_embeddings
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ class QdrantService:
 
     Responsibilities:
     - Store document embeddings
-    - Retrieve documents (later)
+    - Retrieve documents
     - Delete collections (later)
     - Manage collections (later)
     """
@@ -31,7 +32,19 @@ class QdrantService:
     ):
         self.url = url
         self.api_key = api_key
+        self.vector_store = None
+        self.vector_store: Optional[QdrantVectorStore] = None
 
+    def _get_vector_store(self) -> QdrantVectorStore:
+        if self.vector_store is None:
+            self.vector_store = QdrantVectorStore.from_existing_collection(
+                url=self.url,
+                api_key=self.api_key,
+                collection_name=settings.QDRANT_COLLECTION,
+                embedding=get_bge_embeddings(),
+            )
+        return self.vector_store
+    
     def store_documents(
         self,
         documents: list[Document],
@@ -70,3 +83,30 @@ class QdrantService:
         except Exception:
             logger.exception("Failed to store documents in Qdrant.")
             raise
+        
+        
+    def search(self, query: str, top_k: int = 5) -> list[tuple[Document, float]]:
+        """
+        Retrieves the most relevant documents from Qdrant.
+        """
+
+        try:
+            documents = self._get_vector_store().similarity_search_with_score(
+                query=query,
+                k=top_k,
+            )
+            logger.info(
+                "Searching collection '%s'.",
+                settings.QDRANT_COLLECTION,
+            )
+            
+            logger.info(
+                "Retrieved %d documents.",
+                len(documents),
+            )
+
+            return documents
+
+        except Exception:
+            logger.exception("Failed to search Qdrant.")
+            raise   
