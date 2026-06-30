@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     MAX_CONTEXT_DOCUMENTS: int = 4
     MAX_CONTEXT_CHARS: int = 8000
     LLM_TEMPERATURE: float = 0.2
+    
+    NVIDIA_API_KEY: str
+    EVALUATION_MODEL: str = "meta/llama-3.3-70b-instruct"
 
     CHUNK_SIZE: int = 800
     CHUNK_OVERLAP: int = 150
@@ -29,6 +32,15 @@ class Settings(BaseSettings):
     DEBUG: bool = True
 
     UPLOAD_DIR: str = "temp_uploads"
+    
+    # Evaluation
+    ENABLE_EVALUATION: bool = True
+    
+    EVALUATION_MAX_CONTEXT_LENGTH: int = 500
+    EVALUATION_MAX_RETRIEVAL_RESULTS: int = 3
+
+    EVALUATION_SCORE_HIGH: float = 0.85
+    EVALUATION_SCORE_MEDIUM: float = 0.65
 
     @property
     def QDRANT_URL(self) -> str:

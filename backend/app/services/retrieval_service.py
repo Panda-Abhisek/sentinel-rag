@@ -8,6 +8,9 @@ from app.rag.context_builder import ContextBuilder
 import logging
 import time
 from app.core.config import settings
+from app.evaluation.evaluation_logger import EvaluationLogger
+from app.evaluation.evaluation_service import EvaluationService
+from app.evaluation.models import LatencyMetrics
 
 logger = logging.getLogger(__name__)
 
@@ -17,10 +20,11 @@ class RetrievalService:
         self,
         qdrant_service: QdrantService,
         llm_service: LLMService,
+        evaluation_service: EvaluationService,
     ):
         self.qdrant_service = qdrant_service
         self.llm_service = llm_service
-        
+        self.evaluation_service = evaluation_service
     
     def _retrieve_documents(
         self,
@@ -36,7 +40,7 @@ class RetrievalService:
             top_k=top_k,
         )    
     
-    def retrieve_answer(
+    async def retrieve_answer(
         self,
         question: str,
         top_k: int = settings.DEFAULT_TOP_K,
@@ -80,6 +84,13 @@ class RetrievalService:
                         "in the indexed documents."
                     ),
                     sources=[],
+                    evaluation=None,
+                    latency=LatencyMetrics(
+                        retrieval_ms=retrieval_time,
+                        generation_ms=llm_time,
+                        evaluation_ms=evaluation_time,
+                        total_ms=(time.perf_counter() - request_start) * 1000,
+                    )
                 )
 
             # -------------------------------------------------------------
@@ -110,7 +121,7 @@ class RetrievalService:
             # -------------------------------------------------------------
             llm_start = time.perf_counter()
 
-            answer = self.llm_service.generate(prompt)
+            answer = await self.llm_service.generate(prompt)
 
             llm_time = (time.perf_counter() - llm_start) * 1000
 
@@ -123,6 +134,37 @@ class RetrievalService:
                 "Answer length: %d characters.",
                 len(answer),
             )
+
+            ## -------------------------------------------------------------
+            # Evaluate
+            # -------------------------------------------------------------
+            evaluation = None
+            evaluation_time = 0.0
+
+            if settings.ENABLE_EVALUATION:
+                try:
+                    evaluation_start = time.perf_counter()
+
+                    evaluation = await self.evaluation_service.evaluate_pipeline(
+                        question=question,
+                        retrieval_results=documents,
+                        answer=answer,
+                    )
+
+                    evaluation_time = (
+                        time.perf_counter() - evaluation_start
+                    ) * 1000
+
+                    logger.info(
+                        "Evaluation completed in %.2f ms.",
+                        evaluation_time,
+                    )
+
+                    EvaluationLogger.log(evaluation)
+                except Exception:
+                    logger.exception(
+                        "Evaluation pipeline failed."
+                    )
 
             # -------------------------------------------------------------
             # Map Sources
@@ -149,6 +191,13 @@ class RetrievalService:
             return QueryResponse(
                 answer=answer,
                 sources=sources,
+                evaluation=evaluation,
+                latency=LatencyMetrics(
+                    retrieval_ms=retrieval_time,
+                    generation_ms=llm_time,
+                    evaluation_ms=evaluation_time,
+                    total_ms=total_time,
+                )
             )
 
         except Exception:

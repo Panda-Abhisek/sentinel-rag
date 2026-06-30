@@ -25,7 +25,7 @@ class LLMService:
             temperature=settings.GROQ_TEMPERATURE,
         )
 
-    def generate(self, prompt: str) -> str:
+    async def generate(self, prompt: str) -> str:
         """
         Generates an answer from the supplied prompt.
 
@@ -39,7 +39,7 @@ class LLMService:
         logger.info("Sending prompt to Groq.")
 
         try:
-            response = self.llm.invoke(
+            response = await self.llm.ainvoke(
                 [HumanMessage(content=prompt)]
             )
 
