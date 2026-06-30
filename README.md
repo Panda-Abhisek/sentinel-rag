@@ -2,15 +2,18 @@
 
 > **An AI Engineering project that builds a production-ready Self-Healing Retrieval-Augmented Generation (RAG) system using FastAPI, LangChain, Qdrant, and open-source LLMs.**
 
-SentinelRAG is designed to go beyond a basic RAG implementation. Instead of simply retrieving documents and generating responses, the long-term goal is to build an autonomous retrieval system capable of validating its own answers, retrying retrieval when necessary, and reducing hallucinations through an evaluation pipeline.
+A production-grade Self-Healing Retrieval-Augmented Generation (RAG) system built with FastAPI, LangChain, Qdrant, and modern AI engineering practices.
 
+SentinelRAG is designed as a long-term AI Engineering portfolio project demonstrating production RAG, evaluation, observability, and autonomous self-healing workflows.
 ---
 
 # 🚀 Current Status
 
-**Version:** `v0.2.0`
+**Version:** `v0.3.0`
 
 ## ✅ Week 1 Completed
+
+### Foundation, Ingestion Pipeline
 
 * FastAPI backend architecture
 * Modular project structure
@@ -25,6 +28,9 @@ SentinelRAG is designed to go beyond a basic RAG implementation. Instead of simp
 * Service-oriented architecture
 
 ## ✅ Week 2 Completed
+
+### Retrival Pipeline
+
 * Complete Retrieval-Augmented Generation pipeline
 * Qdrant semantic retrieval
 * Groq-powered grounded answering
@@ -38,6 +44,23 @@ SentinelRAG is designed to go beyond a basic RAG implementation. Instead of simp
 ### Performance
 * First request: Cold start
 * Subsequent requests: ~200ms end-to-end
+
+## ✅ Week 3 Completed
+
+### Evaluation Framework
+
+- Retrieval quality evaluation
+- Similarity metrics
+- Confidence scoring
+- Source diversity analysis
+- Duplicate chunk detection
+- Answer evaluation (LLM-as-a-Judge)
+- Hallucination detection
+- Structured evaluation reports
+- Parallel asynchronous evaluation
+- Latency metrics
+- Benchmarking script
+- Unit tests
 
 ---
 
@@ -92,6 +115,34 @@ SentinelRAG is designed to go beyond a basic RAG implementation. Instead of simp
                         ▼
                   Source Citations
 ```
+```
+                 User Query
+                      │
+                      ▼
+            Semantic Retrieval
+                      │
+                      ▼
+             Context Construction
+                      │
+                      ▼
+             Grounded Generation
+                      │
+                      ▼
+        ┌───────────────────────────────┐
+        │                               │
+        ▼                               ▼
+Answer Evaluation          Hallucination Detection
+        │                               │
+        └───────────────┬───────────────┘
+                        ▼
+             Retrieval Evaluation
+                        │
+                        ▼
+             Unified Evaluation Report
+                        │
+                        ▼
+                API Response + Logs
+```
 ---
 
 # 📁 Project Structure
@@ -99,44 +150,72 @@ SentinelRAG is designed to go beyond a basic RAG implementation. Instead of simp
 ```
 backend/
 
+tests/
+├── conftest.py
+├── evaluation
+│   ├── test_confidence_scorer.py
+│   ├── test_metrics_calculator.py
+│   ├── test_retrieval_evaluator.py
+│   └── test_score_level.py
+
 app/
-│
-├── api/
-|     ├── dependencies.py
-│     ├── document_routes.py
-│     └── health_routes.py
-|     └── retrieval_routes.py
-│
-├── core/
-│     ├── config.py
-│     └── logging_config.py
-│
-├── embeddings/
-│     └── embedding_model.py
-│
-├── schemas/
-│     └── index.py
-│     └── retrieval.py
-│
-├── services/
-│     ├── document_loader.py
-│     ├── text_splitter.py
-│     ├── llm_service.py
-│     ├── retrieval_service.py
-│     └── index_service.py
-│
-├── utils/
-│     └── file_handler.py
-│
-├── vectorstore/
-│     └── qdrant_client.py
-│
-├── rag/
-|     ├── context_builder.py
-|     ├── prompt_builder.py
-|     ├── source_mapper.py
-│
-└── main.py
+|
+├── api
+│   ├── dependencies.py
+│   ├── document_routes.py
+│   ├── health_routes.py
+│   └── retrieval_routes.py
+|
+├── core
+│   ├── config.py
+│   └── logging_config.py
+|
+├── embeddings
+│    └──embedding_model.py
+│   
+├── evaluation
+│   ├── answer_evaluator.py
+│   ├── confidence_scorer.py
+│   ├── deepeval_evaluator.py
+│   ├── evaluation_logger.py
+│   ├── evaluation_service.py
+│   ├── hallucination_detector.py
+│   ├── metrics.py
+│   ├── models.py
+│   ├── report_builder.py
+│   ├── retrieval_evaluator.py
+│   └── score_level.py
+|
+├── __init__.py
+├── main.py
+|
+├── rag
+│   ├── context_builder.py
+│   ├── evaluation_prompt_builder.py
+│   ├── prompt_builder.py
+│   └── source_mapper.py
+|
+├── schemas
+│   ├── index.py
+│   └── retrieval.py
+|
+├── scripts
+│   └── benchmark.py
+|
+├── services
+│   ├── document_loader.py
+│   ├── evaluation_llm.py
+│   ├── index_service.py
+│   ├── llm_service.py
+│   ├── retrieval_service.py
+│   └── text_splitter.py
+|
+├── utils
+│   ├── file_handler.py
+│   
+└── vectorstore
+    └── qdrant_client.py
+
 ```
 
 ---
@@ -176,6 +255,11 @@ app/
 * Qwen
 * DeepSeek
 
+### Evaluation
+
+* NVIDIA API
+* Llama 3.3 70B
+* LLM-as-a-Judge
 ---
 
 # ✨ Features
@@ -202,6 +286,17 @@ app/
 * Structured logging
 * Environment-based configuration
 * Production-ready project layout
+
+## Evaluation
+
+* Retrieval confidence scoring
+* Similarity statistics
+* Source diversity analysis
+* Duplicate detection
+* Answer quality evaluation
+* Hallucination detection
+* Structured evaluation reports
+* Parallel evaluation pipeline
 
 ---
 
@@ -256,7 +351,46 @@ Retrievs answers
       "score": 0,
       "content": "string"
     }
-  ]
+  ],
+  "evaluation": {
+    "retrieval": {
+      "confidence": {
+        "score": 0,
+        "level": "string"
+      },
+      "metrics": {
+        "average_similarity": 0,
+        "max_similarity": 0,
+        "min_similarity": 0,
+        "similarity_std": 0,
+        "retrieved_documents": 0,
+        "unique_sources": 0,
+        "average_chunk_length": 0,
+        "duplicate_ratio": 0
+      },
+      "warnings": [
+        "string"
+      ]
+    },
+    "answer": {
+      "faithfulness": 0,
+      "answer_relevancy": 0,
+      "context_utilization": 0,
+      "completeness": 0,
+      "overall_score": 0
+    },
+    "hallucination": {
+      "hallucination_score": 0,
+      "risk_level": "string",
+      "grounded": true
+    }
+  },
+  "latency": {
+    "retrieval_ms": 0,
+    "generation_ms": 0,
+    "evaluation_ms": 0,
+    "total_ms": 0
+  }
 }
 ```
 
