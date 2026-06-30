@@ -17,7 +17,7 @@ router = APIRouter(
     "/",
     response_model=QueryResponse,
 )
-def query(
+async def query(
     request: QueryRequest,
     retrieval_service: RetrievalService = Depends(get_retrieval_service),
 ) -> QueryResponse:
@@ -27,7 +27,7 @@ def query(
 
     logger.info("Received query request.")
 
-    return retrieval_service.retrieve_answer(
+    return await retrieval_service.retrieve_answer(
         question=request.question,
         top_k=request.top_k,
     )
