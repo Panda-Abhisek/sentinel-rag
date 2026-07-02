@@ -64,26 +64,33 @@ class EvaluationPromptBuilder:
 
         return dedent(
             f"""
-            You are evaluating a Retrieval-Augmented Generation (RAG) response.
+            You are an expert evaluator for a Retrieval-Augmented Generation (RAG) system.
 
-            Evaluate the generated answer using ONLY the retrieved context.
+            Your task is to objectively evaluate the generated answer using ONLY the retrieved context.
 
-            Evaluation Guidelines
+            Evaluation Criteria
 
-            - Faithfulness:
-            Measure whether every factual claim is supported by the retrieved context.
+            1. Faithfulness
+            Score how well every factual statement in the answer is supported by the retrieved context.
 
-            - Answer Relevancy:
-            Measure how directly the answer addresses the user's question.
+            2. Answer Relevancy
+            Score how directly and completely the answer addresses the user's question.
 
-            - Context Utilization:
-            Measure how effectively the retrieved context is used.
+            3. Context Utilization
+            Score how effectively the retrieved context is used to construct the answer.
 
-            - Completeness:
-            Measure whether the answer covers all important aspects of the question.
+            4. Completeness
+            Score whether the answer covers all important aspects that can be answered from the retrieved context.
 
-            Each metric should be evaluated independently.
-            Do not assign identical scores unless they genuinely deserve the same value.
+            Scoring Rules
+
+            - Every score must be between 0.0 and 1.0.
+            - Evaluate every metric independently.
+            - Different metrics should receive different scores whenever appropriate.
+            - Do NOT automatically assign 0.0 or 1.0.
+            - Reserve 1.0 only for nearly perfect performance.
+            - Reserve 0.0 only for complete failure.
+            - If uncertain, assign an intermediate value.
 
             Question:
             {question}
@@ -95,15 +102,11 @@ class EvaluationPromptBuilder:
             {answer}
 
             {contract}
-            Evaluate the answer carefully before producing the output. 
-            First, internally evaluate the answer against the retrieved context.
 
-            Then return ONLY the final JSON object.
+            Think carefully before scoring.
 
-            Reason privately about the evaluation.
+            Return ONLY the JSON object.
 
-            Return ONLY the final JSON object.
-
-            Do not reveal your reasoning.
+            Do not include explanations, markdown, code fences, or additional text.
             """
         ).strip()

@@ -26,32 +26,53 @@ class LLMService:
             max_tokens=settings.GENERATION_MAX_TOKENS,
         )
 
-    async def generate(self, prompt: str) -> str:
+    async def generate(
+        self,
+        prompt: str,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+    ) -> str:
         """
-        Generates an answer from the supplied prompt.
+        Generate a response from the configured language model.
 
-        Args:
-            prompt: Fully formatted prompt.
-
-        Returns:
-            Generated answer.
+        Optional generation parameters override the default model
+        configuration for a single request.
         """
 
         logger.info("Sending prompt to Groq.")
 
+        llm = self.llm
+
+        if (
+            temperature is not None
+            or max_tokens is not None
+        ):
+            llm = ChatGroq(
+                api_key=settings.GROQ_API_KEY,
+                model=settings.LLM_MODEL,
+                temperature=(
+                    temperature
+                    if temperature is not None
+                    else settings.GENERATION_TEMPERATURE
+                ),
+                max_tokens=(
+                    max_tokens
+                    if max_tokens is not None
+                    else settings.GENERATION_MAX_TOKENS
+                ),
+            )
+
         try:
-            response = await self.llm.ainvoke(
+            response = await llm.ainvoke(
                 [HumanMessage(content=prompt)]
             )
 
             logger.info("Received response from Groq.")
 
-            answer = response.content
-
             answer = re.sub(
                 r"<think>.*?</think>",
                 "",
-                answer,
+                response.content,
                 flags=re.DOTALL,
             ).strip()
 
