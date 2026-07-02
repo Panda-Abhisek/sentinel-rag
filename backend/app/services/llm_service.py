@@ -22,7 +22,8 @@ class LLMService:
         self.llm = ChatGroq(
             api_key=settings.GROQ_API_KEY,
             model=settings.LLM_MODEL,
-            temperature=settings.GROQ_TEMPERATURE,
+            temperature=settings.GENERATION_TEMPERATURE,
+            max_tokens=settings.GENERATION_MAX_TOKENS,
         )
 
     async def generate(self, prompt: str) -> str:

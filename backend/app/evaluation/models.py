@@ -1,5 +1,20 @@
 from pydantic import BaseModel, Field, computed_field
+from enum import Enum
 
+class RiskLevel(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+    @property
+    def priority(self) -> int:
+        priorities = {
+            RiskLevel.LOW: 0,
+            RiskLevel.MEDIUM: 1,
+            RiskLevel.HIGH: 2,
+        }
+        return priorities[self]
+    
 class RetrievalMetrics(BaseModel):
     average_similarity: float
     max_similarity: float
@@ -53,14 +68,14 @@ class HallucinationEvaluation(BaseModel):
 
     @computed_field
     @property
-    def risk_level(self) -> str:
+    def risk_level(self) -> RiskLevel:
         if self.hallucination_score <= 0.20:
-            return "LOW"
+            return RiskLevel.LOW
 
         if self.hallucination_score <= 0.50:
-            return "MEDIUM"
+            return RiskLevel.MEDIUM
 
-        return "HIGH"
+        return RiskLevel.HIGH
 
     @computed_field
     @property

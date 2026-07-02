@@ -7,6 +7,7 @@ from app.evaluation.metrics import RetrievedResults
 from app.services.evaluation_llm import EvaluationLLM
 from app.rag.evaluation_prompt_builder import EvaluationPromptBuilder
 from app.core.config import settings
+from app.evaluation.json_parser import parse_json_response
 
 logger = logging.getLogger(__name__)
 
@@ -17,9 +18,7 @@ class AnswerEvaluator:
     """
 
     def __init__(self) -> None:
-        self._llm = EvaluationLLM.get_llm().with_structured_output(
-            AnswerEvaluation
-        )
+        self._llm = EvaluationLLM.get_llm()
 
     async def evaluate(
         self,
@@ -44,7 +43,17 @@ class AnswerEvaluator:
 
         logger.info("Running answer evaluation.")
 
-        evaluation = await self._llm.ainvoke(prompt)
+        response = await self._llm.ainvoke(prompt)
+        
+        logger.info(
+            "Raw LLM response:\n%s",
+            response.content,
+        )
+
+        evaluation = parse_json_response(
+            AnswerEvaluation,
+            response.content,
+        )
         # print(evaluation)
 
         logger.info("Answer evaluation completed.")

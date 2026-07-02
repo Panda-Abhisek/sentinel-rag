@@ -33,8 +33,8 @@ class EvaluationLLM:
                 model=settings.EVALUATION_MODEL,
                 api_key=settings.NVIDIA_API_KEY,
                 base_url="https://integrate.api.nvidia.com/v1",
-                temperature=0.0,
-                max_tokens=2048,
+                temperature=settings.EVALUATION_TEMPERATURE,
+                # max_tokens=settings.EVALUATION_MAX_TOKENS,
             )
 
             logger.info("Evaluation LLM initialized successfully.")
