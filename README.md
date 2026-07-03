@@ -9,7 +9,7 @@ SentinelRAG is designed as a long-term AI Engineering portfolio project demonstr
 
 # 🚀 Current Status
 
-**Version:** `v0.3.0`
+**Version:** `v0.4.0`
 
 ## ✅ Week 1 Completed
 
@@ -61,6 +61,22 @@ SentinelRAG is designed as a long-term AI Engineering portfolio project demonstr
 - Latency metrics
 - Benchmarking script
 - Unit tests
+
+## ✅ Week 4 Completed
+
+### Self-Healing Retrieval
+
+- Autonomous self-healing retrieval pipeline
+- Evaluation-driven retry decisions
+- Query rewriting using an LLM
+- Intelligent retry strategy
+- Automatic answer selection
+- Healing policy engine
+- Healing report generation
+- End-to-end healing orchestration
+- Production-grade dependency injection
+- Comprehensive unit tests
+- Integration tests
 
 ---
 
@@ -115,6 +131,7 @@ SentinelRAG is designed as a long-term AI Engineering portfolio project demonstr
                         ▼
                   Source Citations
 ```
+## Evaluation Pipeline
 ```
                  User Query
                       │
@@ -142,6 +159,49 @@ Answer Evaluation          Hallucination Detection
                         │
                         ▼
                 API Response + Logs
+```
+# Self-Healing Pipeline
+```
+                  User Query
+                      │
+                      ▼
+             Initial Retrieval
+                      │
+                      ▼
+              Retrieval Evaluation
+                      │
+                      ▼
+             Answer Evaluation
+                      │
+                      ▼
+          Hallucination Detection
+                      │
+                      ▼
+               Healing Policy
+                      │
+             Retry Required?
+               ┌───────────┐
+          No   │           │ Yes
+               ▼           ▼
+        Return Answer   Rewrite Query
+                             │
+                             ▼
+                      Query Rewriter
+                             │
+                             ▼
+                    Second Retrieval
+                             │
+                             ▼
+                     Second Evaluation
+                             │
+                             ▼
+                     Answer Selector
+                             │
+                             ▼
+                     Healing Report
+                             │
+                             ▼
+                     Final API Response
 ```
 ---
 
@@ -260,6 +320,17 @@ app/
 * NVIDIA API
 * Llama 3.3 70B
 * LLM-as-a-Judge
+
+### Self-Healing
+
+* Automatic query rewriting
+* Evaluation-driven retry strategy
+* Intelligent healing policy
+* Automatic answer comparison
+* Hallucination-aware answer selection
+* Healing report generation
+* Graceful fallback on retry failures
+* End-to-end self-healing orchestration
 ---
 
 # ✨ Features
@@ -343,53 +414,24 @@ Retrievs answers
 
 ```json
 {
-  "answer": "string",
-  "sources": [
-    {
-      "page": 0,
-      "source": "string",
-      "score": 0,
-      "content": "string"
-    }
-  ],
-  "evaluation": {
-    "retrieval": {
-      "confidence": {
-        "score": 0,
-        "level": "string"
-      },
-      "metrics": {
-        "average_similarity": 0,
-        "max_similarity": 0,
-        "min_similarity": 0,
-        "similarity_std": 0,
-        "retrieved_documents": 0,
-        "unique_sources": 0,
-        "average_chunk_length": 0,
-        "duplicate_ratio": 0
-      },
-      "warnings": [
-        "string"
-      ]
-    },
-    "answer": {
-      "faithfulness": 0,
-      "answer_relevancy": 0,
-      "context_utilization": 0,
-      "completeness": 0,
-      "overall_score": 0
-    },
-    "hallucination": {
-      "hallucination_score": 0,
-      "risk_level": "string",
-      "grounded": true
-    }
+  "response": {
+    "answer": "...",
+    "sources": [],
+    "evaluation": {},
+    "latency": {}
   },
-  "latency": {
-    "retrieval_ms": 0,
-    "generation_ms": 0,
-    "evaluation_ms": 0,
-    "total_ms": 0
+  "healing": {
+    "original_query": "...",
+    "rewritten_query": "...",
+    "healing_attempted": true,
+    "healing_success": true,
+    "retry_count": 1,
+    "retry_reason": "low_answer_quality",
+    "selected_answer": "healed",
+    "winner_reason": "higher_answer_quality",
+    "original_score": 0.63,
+    "healed_score": 0.91,
+    "latency_overhead_ms": 812
   }
 }
 ```
@@ -460,21 +502,40 @@ http://127.0.0.1:8000/docs
 * Groq integration
 * Qwen / DeepSeek support
 
-## 📋 Week 3
+## ✅ Week 3
 
-* LangGraph workflow
+* Retrieval evaluation
+* Answer evaluation
+* Hallucination detection
+* Confidence scoring
+* Parallel evaluation pipeline
+* Structured evaluation reports
+
+## ✅ Week 4
+
 * Self-healing retrieval
 * Query rewriting
+* Healing policy engine
+* Retry strategy
+* Answer selection
+* Healing reports
+* Unit tests
+* Integration tests
+
+## 🚧 Week 5
+
+* LangGraph workflow
+* Multi-agent orchestration
 * Critic agent
-* Retry mechanism
+* Reflection agent
+* Query planning
 
-## 📊 Week 4
+## 📋 Week 6
 
-* Evaluation metrics
 * Observability
 * Monitoring
 * Production deployment
-* Performance optimization
+* Performance benchmarking
 
 ---
 
@@ -482,13 +543,15 @@ http://127.0.0.1:8000/docs
 
 SentinelRAG aims to evolve into an autonomous AI retrieval system capable of:
 
-* Detecting unsupported answers
-* Automatically rewriting poor search queries
-* Retrying retrieval with improved context
+* Evaluating every generated answer
+* Detecting unsupported responses
+* Automatically rewriting ambiguous queries
+* Retrying retrieval using improved search queries
+* Selecting the best answer from multiple candidates
+* Producing transparent healing reports
 * Reducing hallucinations
 * Providing explainable and traceable responses
 * Serving as a production-grade AI engineering reference project
-
 ---
 
 # 📄 License

@@ -13,10 +13,10 @@ class Settings(BaseSettings):
     QDRANT_PORT: int = 6333
     QDRANT_COLLECTION: str = "sentinel_rag"
 
-    EMBEDDING_MODEL: str = "BAAI/bge-small-en-v1.5"
+    EMBEDDING_MODEL: str = "BAAI/bge-base-en-v1.5"
     EMBEDDING_DEVICE: str = "cpu"
 
-    LLM_MODEL: str = "qwen/qwen3-32b"
+    
     DEFAULT_TOP_K: int = 4
     RETRIEVAL_THRESHOLD: float = 0.45
     MAX_CONTEXT_DOCUMENTS: int = 4
@@ -24,7 +24,16 @@ class Settings(BaseSettings):
     LLM_TEMPERATURE: float = 0.2
     
     NVIDIA_API_KEY: str
-    EVALUATION_MODEL: str = "meta/llama-3.3-70b-instruct"
+    # Generation
+    # GENERATION_MODEL: str = "meta/llama-3.3-70b-instruct"
+    LLM_MODEL: str = "qwen/qwen3-32b"
+    GENERATION_MAX_TOKENS: int = 2048
+    GENERATION_TEMPERATURE: float = 0.2
+
+    # Evaluation
+    EVALUATION_MODEL: str = "nvidia/nemotron-mini-4b-instruct"
+    EVALUATION_MAX_TOKENS: int = 256
+    EVALUATION_TEMPERATURE: float = 0.0
 
     CHUNK_SIZE: int = 800
     CHUNK_OVERLAP: int = 150

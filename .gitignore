@@ -3,3 +3,9 @@ venv
 .env
 __pycache__
 temp_uploads
+Makefile
+pytest.ini
+.coverage
+htmlcov
+.pytest_cache
+tests

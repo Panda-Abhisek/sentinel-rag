@@ -1,6 +1,6 @@
 import asyncio
 import logging
-
+import time
 from app.evaluation.models import EvaluationReport
 from app.evaluation.answer_evaluator import AnswerEvaluator
 from app.evaluation.retrieval_evaluator import RetrievalEvaluator
@@ -42,7 +42,7 @@ class EvaluationService:
         """
 
         logger.info("Starting evaluation pipeline.")
-
+        start = time.perf_counter()
         retrieval_evaluation = self._retrieval_evaluator.evaluate(
             retrieval_results
         )
@@ -72,7 +72,9 @@ class EvaluationService:
             ),
         )
 
-        logger.info("Evaluation pipeline completed.")
+        logger.info("Evaluation pipeline completed in %.2f ms.",
+            (time.perf_counter() - start) * 1000,
+        )
 
         return EvaluationReport(
             retrieval=retrieval_evaluation,

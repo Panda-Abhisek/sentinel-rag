@@ -87,8 +87,8 @@ class RetrievalService:
                     evaluation=None,
                     latency=LatencyMetrics(
                         retrieval_ms=retrieval_time,
-                        generation_ms=llm_time,
-                        evaluation_ms=evaluation_time,
+                        generation_ms=0,
+                        evaluation_ms=0,
                         total_ms=(time.perf_counter() - request_start) * 1000,
                     )
                 )

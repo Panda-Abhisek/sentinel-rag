@@ -1,5 +1,8 @@
 from textwrap import dedent
 
+from app.evaluation.models import AnswerEvaluation, HallucinationEvaluation
+from app.evaluation.json_contract import build_json_contract
+
 class EvaluationPromptBuilder:
     """
     Builds prompts for LLM-based evaluation tasks.
@@ -16,17 +19,19 @@ class EvaluationPromptBuilder:
 
         context = "\n\n".join(contexts)
 
+        contract = build_json_contract(HallucinationEvaluation)
+
         return dedent(
             f"""
             You are detecting hallucinations in a Retrieval-Augmented Generation (RAG) answer.
 
-            Compare the generated answer against the retrieved context.
+            Identify every factual claim made in the generated answer.
 
-            Return a hallucination_score between 0.0 and 1.0.
+            Verify each claim against the retrieved context.
 
-            0.0 = Every statement is fully supported by the retrieved context.
+            A claim is hallucinated if it cannot be fully supported by the retrieved context.
 
-            1.0 = Most statements are unsupported or fabricated.
+            Compute the hallucination score based on the proportion and severity of unsupported claims.
 
             Retrieved Context:
             {context}
@@ -34,7 +39,12 @@ class EvaluationPromptBuilder:
             Generated Answer:
             {answer}
 
-            Return only the structured response.
+            {contract}
+            First, internally evaluate the answer against the retrieved context.
+
+            Then return ONLY the final JSON object.
+
+            Do not reveal your reasoning.
             """
         ).strip()
 
@@ -50,18 +60,37 @@ class EvaluationPromptBuilder:
 
         context = "\n\n".join(contexts)
 
+        contract = build_json_contract(AnswerEvaluation)
+
         return dedent(
             f"""
-            You are evaluating a Retrieval-Augmented Generation (RAG) response.
+            You are an expert evaluator for a Retrieval-Augmented Generation (RAG) system.
 
-            Evaluate the answer using ONLY the retrieved context.
+            Your task is to objectively evaluate the generated answer using ONLY the retrieved context.
 
-            Score each metric between 0.0 and 1.0:
+            Evaluation Criteria
 
-            - faithfulness
-            - answer_relevancy
-            - context_utilization
-            - completeness
+            1. Faithfulness
+            Score how well every factual statement in the answer is supported by the retrieved context.
+
+            2. Answer Relevancy
+            Score how directly and completely the answer addresses the user's question.
+
+            3. Context Utilization
+            Score how effectively the retrieved context is used to construct the answer.
+
+            4. Completeness
+            Score whether the answer covers all important aspects that can be answered from the retrieved context.
+
+            Scoring Rules
+
+            - Every score must be between 0.0 and 1.0.
+            - Evaluate every metric independently.
+            - Different metrics should receive different scores whenever appropriate.
+            - Do NOT automatically assign 0.0 or 1.0.
+            - Reserve 1.0 only for nearly perfect performance.
+            - Reserve 0.0 only for complete failure.
+            - If uncertain, assign an intermediate value.
 
             Question:
             {question}
@@ -72,6 +101,12 @@ class EvaluationPromptBuilder:
             Generated Answer:
             {answer}
 
-            Return only the structured response.
+            {contract}
+
+            Think carefully before scoring.
+
+            Return ONLY the JSON object.
+
+            Do not include explanations, markdown, code fences, or additional text.
             """
         ).strip()
