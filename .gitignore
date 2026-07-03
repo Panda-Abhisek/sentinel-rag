@@ -8,3 +8,4 @@ pytest.ini
 .coverage
 htmlcov
 .pytest_cache
+tests
