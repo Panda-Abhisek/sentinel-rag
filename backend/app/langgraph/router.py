@@ -1,7 +1,9 @@
+import logging
 from app.langgraph.state import SentinelState
 
+logger = logging.getLogger(__name__)
 
-def route(state: SentinelState) -> str:
+def planner_router(state: SentinelState) -> str:
     """
     Placeholder router.
 
@@ -11,4 +13,5 @@ def route(state: SentinelState) -> str:
     - multi-hop
     - finish
     """
-    return "retrieve"
+    print("route: ", state["route"])
+    return state["route"]
