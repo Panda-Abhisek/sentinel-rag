@@ -37,6 +37,10 @@ from app.services.retrieval_service import RetrievalService
 
 from app.vectorstore.qdrant_client import QdrantService
 
+from app.langgraph.dependencies import SentinelContext
+from app.services.graph_service import GraphService
+from app.services.generation_service import GenerationService
+
 
 # ==========================================================
 # Infrastructure
@@ -88,8 +92,8 @@ def get_evaluation_service() -> EvaluationService:
 def get_retrieval_service() -> RetrievalService:
     return RetrievalService(
         qdrant_service=get_qdrant_service(),
-        llm_service=get_llm_service(),
-        evaluation_service=get_evaluation_service(),
+        # llm_service=get_llm_service(),
+        # evaluation_service=get_evaluation_service(),
     )
 
 
@@ -134,4 +138,23 @@ def get_healing_service() -> HealingService:
         healing_policy=get_healing_policy(),
         retry_strategy=get_retry_strategy(),
         answer_selector=get_answer_selector(),
+    )
+    
+def get_generation_service() -> GenerationService:
+    return GenerationService(
+        llm_service=get_llm_service(),
+    )
+
+
+def get_graph_dependencies() -> SentinelContext:
+    return SentinelContext(
+        retrieval=get_retrieval_service(),
+        generation=get_generation_service(),
+        evaluation=get_evaluation_service(),
+    )
+
+
+def get_graph_service() -> GraphService:
+    return GraphService(
+        dependencies=get_graph_dependencies(),
     )

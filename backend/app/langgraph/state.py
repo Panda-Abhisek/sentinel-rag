@@ -1,17 +1,25 @@
-from typing import TypedDict, Optional, List
+from typing import TypedDict
+from langchain_core.documents import Document
+
+from app.evaluation.models import EvaluationReport
 
 
 class SentinelState(TypedDict):
+    # Input
     query: str
+    top_k: int
 
-    rewritten_query: Optional[str]
+    # Retrieval
+    retrieved_documents: list[tuple[Document, float]]
 
-    retrieved_documents: List
+    # Generation
+    answer: str | None
 
-    answer: Optional[str]
+    # Evaluation
+    evaluation: EvaluationReport | None
 
-    retry_count: int
-
-    should_retry: bool
-
-    finished: bool
+    # Timing
+    retrieval_ms: float
+    generation_ms: float
+    evaluation_ms: float
+    total_ms: float

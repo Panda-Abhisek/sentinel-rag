@@ -1,11 +1,9 @@
 from fastapi import APIRouter, Depends
 import logging
 
-from app.api.dependencies import get_healing_service, get_retrieval_service
+from app.api.dependencies import get_graph_service
 from app.schemas.retrieval import QueryRequest, QueryResponse
-from app.services.retrieval_service import RetrievalService
-from app.healing.healing_service import HealingService
-from app.healing.models import HealingResponse
+from app.services.graph_service import GraphService
 
 logger = logging.getLogger(__name__)
 
@@ -16,20 +14,38 @@ router = APIRouter(
 
 @router.post(
     "/",
-    response_model=HealingResponse,
+    response_model=QueryResponse,
 )
 async def query(
     request: QueryRequest,
-    healing_service: HealingService = Depends(
-        get_healing_service
+    graph_service: GraphService = Depends(
+        get_graph_service,
     ),
-) -> HealingResponse:
+):
 
     logger.info("Received query request.")
 
-    return await healing_service.answer(
-        request.question,
+    return await graph_service.execute(
+        question=request.question,
+        top_k=request.top_k,
     )
+
+# @router.post(
+#     "/",
+#     response_model=HealingResponse,
+# )
+# async def query(
+#     request: QueryRequest,
+#     healing_service: HealingService = Depends(
+#         get_healing_service
+#     ),
+# ) -> HealingResponse:
+
+#     logger.info("Received query request.")
+
+#     return await healing_service.answer(
+#         request.question,
+#     )
 
 # @router.post(
 #     "/",
