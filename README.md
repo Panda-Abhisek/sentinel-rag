@@ -1,15 +1,15 @@
 # 🛡️ SentinelRAG
 
-> **An AI Engineering project that builds a production-ready Self-Healing Retrieval-Augmented Generation (RAG) system using FastAPI, LangChain, Qdrant, and open-source LLMs.**
+> **An AI Engineering project that builds a production-ready Self-Healing Retrieval-Augmented Generation (RAG) system using FastAPI, LangChain, LangGraph, Qdrant, and open-source LLMs.**
 
-A production-grade Self-Healing Retrieval-Augmented Generation (RAG) system built with FastAPI, LangChain, Qdrant, and modern AI engineering practices.
+A production-grade Self-Healing Retrieval-Augmented Generation (RAG) system built with FastAPI, LangChain, LangGraph, Qdrant, and modern AI engineering practices.
 
 SentinelRAG is designed as a long-term AI Engineering portfolio project demonstrating production RAG, evaluation, observability, and autonomous self-healing workflows.
 ---
 
 # 🚀 Current Status
 
-**Version:** `v0.4.0`
+**Version:** `v0.5.0`
 
 ## ✅ Week 1 Completed
 
@@ -77,6 +77,21 @@ SentinelRAG is designed as a long-term AI Engineering portfolio project demonstr
 - Production-grade dependency injection
 - Comprehensive unit tests
 - Integration tests
+
+## ✅ Week 5 Completed
+
+### LangGraph Agentic Workflow
+
+- LangGraph-based agentic workflow orchestration
+- Planner agent — LLM-driven retrieve-vs-rewrite routing decision
+- Critic agent — answer quality evaluation with finish/retry routing
+- Query rewriting node with retry tracking
+- Multi-candidate answer generation and accumulation across attempts
+- Answer selector — score-based candidate selection using faithfulness, relevancy, completeness, and hallucination score
+- Reflection agent — explainable reasoning for the selected answer
+- Conditional routing with retry limits (max_retries: 2)
+- Modular node architecture with dependency-injected context via `SentinelContext`
+- State graph visualization script (`visualize_graph.py`)
 
 ---
 
@@ -203,6 +218,43 @@ Answer Evaluation          Hallucination Detection
                              ▼
                      Final API Response
 ```
+# LangGraph Agentic Workflow
+```
+                  User Query
+                       │
+                       ▼
+                   Planner
+                       │
+             ┌─────────┴─────────┐
+             │                   │
+             ▼                   ▼
+          Retrieve            Rewrite
+             │                   │
+             └─────────┬─────────┘
+                       │
+                       ▼
+                   Generate
+                       │
+                       ▼
+                  Evaluate
+                       │
+                       ▼
+                   Critic
+                       │
+             ┌─────────┴─────────┐
+             │                   │
+             ▼                   ▼
+         Selector            Rewrite
+             │              (retry +1)
+             │                   │
+             ▼                   │
+        Reflection               │
+             │                   │
+             └───────────────────┘
+                       │
+                       ▼
+                Final Answer
+```
 ---
 
 # 📁 Project Structure
@@ -246,6 +298,30 @@ app/
 │   ├── retrieval_evaluator.py
 │   └── score_level.py
 |
+├── langgraph
+│   ├── __init__.py
+│   ├── constants.py
+│   ├── dependencies.py
+│   ├── edges.py
+│   ├── graph.py
+│   ├── models.py
+│   ├── router.py
+│   ├── state.py
+│   ├── nodes/
+│   │   ├── __init__.py
+│   │   ├── critic_node.py
+│   │   ├── evaluation_node.py
+│   │   ├── generation_node.py
+│   │   ├── planner_node.py
+│   │   ├── reflection_node.py
+│   │   ├── retrieval_node.py
+│   │   ├── rewrite_node.py
+│   │   └── selector_node.py
+│   └── prompts/
+│       ├── critic.txt
+│       ├── planner.txt
+│       └── reflection.txt
+|
 ├── __init__.py
 ├── main.py
 |
@@ -253,6 +329,7 @@ app/
 │   ├── context_builder.py
 │   ├── evaluation_prompt_builder.py
 │   ├── prompt_builder.py
+│   ├── rewrite_prompt_builder.py
 │   └── source_mapper.py
 |
 ├── schemas
@@ -260,13 +337,23 @@ app/
 │   └── retrieval.py
 |
 ├── scripts
-│   └── benchmark.py
+│   ├── benchmark.py
+│   ├── test_graph.py
+│   └── visualize_graph.py
 |
 ├── services
+│   ├── answer_selector_service.py
+│   ├── critic_service.py
 │   ├── document_loader.py
 │   ├── evaluation_llm.py
+│   ├── generation_service.py
+│   ├── graph_service.py
 │   ├── index_service.py
 │   ├── llm_service.py
+│   ├── planner_service.py
+│   ├── query_rewriter_service.py
+│   ├── reflection_service.py
+│   ├── response_service.py
 │   ├── retrieval_service.py
 │   └── text_splitter.py
 |
@@ -291,6 +378,7 @@ app/
 ### RAG Framework
 
 * LangChain
+* LangGraph
 
 ### Embedding Model
 
@@ -331,6 +419,16 @@ app/
 * Healing report generation
 * Graceful fallback on retry failures
 * End-to-end self-healing orchestration
+
+### Agentic Workflow
+
+* LangGraph state graph orchestration
+* Planner agent — retrieve-vs-rewrite routing
+* Critic agent — quality-driven retry decisions
+* Reflection agent — explainable answer selection
+* Multi-candidate answer accumulation
+* Conditional routing with retry limits
+* Dependency-injected node context
 ---
 
 # ✨ Features
@@ -368,6 +466,19 @@ app/
 * Hallucination detection
 * Structured evaluation reports
 * Parallel evaluation pipeline
+
+## LangGraph Agentic Workflow
+
+* State graph orchestration via LangGraph
+* Planner agent for query routing decisions
+* Critic agent for quality-driven retry
+* Automatic query rewriting on retry
+* Multi-candidate answer management
+* Score-based answer selection
+* Reflection-based explainability
+* Conditional routing with configurable retry limits
+* Dependency-injected context per execution
+* ASCII and Mermaid graph visualization
 
 ---
 
@@ -522,20 +633,23 @@ http://127.0.0.1:8000/docs
 * Unit tests
 * Integration tests
 
-## 🚧 Week 5
+## ✅ Week 5
 
 * LangGraph workflow
 * Multi-agent orchestration
+* Planner agent
 * Critic agent
+* Query rewriting node
+* Multi-candidate answer selection
 * Reflection agent
-* Query planning
+* State graph visualization
 
-## 📋 Week 6
+## 🚧 Week 6
 
-* Observability
-* Monitoring
-* Production deployment
+* Observability & monitoring
+* Production deployment preparation
 * Performance benchmarking
+* Frontend integration
 
 ---
 
