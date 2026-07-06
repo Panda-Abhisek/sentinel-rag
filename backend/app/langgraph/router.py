@@ -13,5 +13,8 @@ def planner_router(state: SentinelState) -> str:
     - multi-hop
     - finish
     """
-    print("route: ", state["route"])
-    return state["route"]
+    print("planner_route: ", state["planner_route"])
+    return state["planner_route"]
+
+def critic_router(state: SentinelState):
+    return state["critic_route"]

@@ -40,6 +40,8 @@ from app.vectorstore.qdrant_client import QdrantService
 from app.langgraph.dependencies import SentinelContext
 from app.services.graph_service import GraphService
 from app.services.generation_service import GenerationService
+from app.services.critic_service import CriticService
+from app.services.query_rewriter_service import QueryRewriterService
 
 
 # ==========================================================
@@ -91,9 +93,7 @@ def get_evaluation_service() -> EvaluationService:
 @lru_cache
 def get_retrieval_service() -> RetrievalService:
     return RetrievalService(
-        qdrant_service=get_qdrant_service(),
-        # llm_service=get_llm_service(),
-        # evaluation_service=get_evaluation_service(),
+        qdrant_service=get_qdrant_service()
     )
 
 
@@ -151,10 +151,22 @@ def get_graph_dependencies() -> SentinelContext:
         retrieval=get_retrieval_service(),
         generation=get_generation_service(),
         evaluation=get_evaluation_service(),
+        critic=get_critic_service(),
+        rewriter=get_rewriter_query()
     )
 
 
 def get_graph_service() -> GraphService:
     return GraphService(
         dependencies=get_graph_dependencies(),
+    )
+    
+def get_critic_service() -> CriticService:
+    return CriticService(
+        llm_service=get_llm_service()
+    )
+    
+def get_rewriter_query() -> QueryRewriterService:
+    return QueryRewriterService(
+        llm_service=get_llm_service()
     )

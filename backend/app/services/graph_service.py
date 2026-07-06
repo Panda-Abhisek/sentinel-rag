@@ -27,6 +27,15 @@ class GraphService:
             "answer": None,
 
             "evaluation": None,
+            
+            "planner_route": "retrieve",
+            "critic_route": "finish",
+
+            "planner_reason": "",
+            "critic_reason": "",
+
+            "retry_count": 0,
+            "max_retries": 2,
 
             "retrieval_ms": 0.0,
             "generation_ms": 0.0,
