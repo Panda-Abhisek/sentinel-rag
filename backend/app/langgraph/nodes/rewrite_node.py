@@ -17,6 +17,6 @@ async def rewrite_node(
 
     return {
         "rewritten_query": rewritten_query,
-        "query": rewritten_query,
+        "query": rewritten_query or state["query"],
         "retry_count": state["retry_count"] + 1,
     }

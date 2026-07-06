@@ -42,6 +42,8 @@ from app.services.graph_service import GraphService
 from app.services.generation_service import GenerationService
 from app.services.critic_service import CriticService
 from app.services.query_rewriter_service import QueryRewriterService
+from app.services.answer_selector_service import AnswerSelectorService
+from app.services.planner_service import PlannerService
 
 
 # ==========================================================
@@ -148,11 +150,13 @@ def get_generation_service() -> GenerationService:
 
 def get_graph_dependencies() -> SentinelContext:
     return SentinelContext(
+        planner=get_planner_service(),
         retrieval=get_retrieval_service(),
         generation=get_generation_service(),
         evaluation=get_evaluation_service(),
         critic=get_critic_service(),
-        rewriter=get_rewriter_query()
+        rewriter=get_rewriter_query(),
+        selector=get_answer_selector_service()
     )
 
 
@@ -168,5 +172,13 @@ def get_critic_service() -> CriticService:
     
 def get_rewriter_query() -> QueryRewriterService:
     return QueryRewriterService(
+        llm_service=get_llm_service()
+    )
+    
+def get_answer_selector_service() -> AnswerSelectorService:
+    return AnswerSelectorService()
+
+def get_planner_service() -> PlannerService:
+    return PlannerService(
         llm_service=get_llm_service()
     )

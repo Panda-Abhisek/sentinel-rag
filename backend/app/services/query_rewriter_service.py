@@ -1,4 +1,3 @@
-import json
 import logging
 
 logger = logging.getLogger(__name__)
@@ -12,11 +11,24 @@ class QueryRewriterService:
     async def rewrite(
         self,
         question: str,
-        answer: str,
-        evaluation,
+        answer: str | None = None,
+        evaluation=None,
     ) -> str:
 
-        prompt = f"""
+        if answer is None or evaluation is None:
+
+            prompt = f"""
+                Rewrite this search query to improve semantic retrieval.
+
+                Question:
+                {question}
+
+                Return ONLY the rewritten query.
+                """
+
+        else:
+
+            prompt = f"""
                 You are an expert search query optimizer for an enterprise Retrieval-Augmented Generation (RAG) system.
 
                 The previous retrieval did not produce an ideal answer.
@@ -46,6 +58,12 @@ class QueryRewriterService:
         rewritten_query = await self.llm.generate(prompt)
 
         rewritten_query = rewritten_query.strip().strip('"')
+        
+        if not rewritten_query:
+            logger.warning(
+                "Rewriter returned an empty query. Using original query."
+            )
+            return question
 
         logger.info(
             "Rewritten query: %s",

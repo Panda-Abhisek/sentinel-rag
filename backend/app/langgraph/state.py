@@ -2,6 +2,7 @@ from typing import Literal, TypedDict
 from langchain_core.documents import Document
 
 from app.evaluation.models import EvaluationReport
+from app.schemas.retrieval import QueryResponse
 
 
 class SentinelState(TypedDict):
@@ -34,3 +35,7 @@ class SentinelState(TypedDict):
     
     rewritten_query: str | None
     planner_reason: str
+    
+    candidate_answers: list[str]
+    candidate_evaluations: list[EvaluationReport]
+    selected_answer_index: int

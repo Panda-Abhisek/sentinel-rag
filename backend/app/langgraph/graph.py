@@ -11,6 +11,7 @@ from app.langgraph.nodes.rewrite_node import rewrite_node
 from app.langgraph.router import planner_router
 from app.langgraph.nodes.critic_node import critic_node
 from app.langgraph.router import critic_router
+from app.langgraph.nodes.selector_node import selector_node
 
 
 builder = StateGraph(state_schema=SentinelState, context_schema=SentinelContext)
@@ -21,6 +22,7 @@ builder.add_node("retrieve", retrieval_node)
 builder.add_node("generate", generation_node)
 builder.add_node("evaluate", evaluation_node)
 builder.add_node("critic", critic_node)
+builder.add_node("selector", selector_node)
 
 builder.add_edge(START, "planner")
 builder.add_conditional_edges(
@@ -39,9 +41,10 @@ builder.add_conditional_edges(
     "critic",
     critic_router,
     {
-        "finish": END,
+        "finish": "selector",
         "rewrite": "rewrite"
     }
 )
+builder.add_edge("selector", END)
 
 graph = builder.compile()

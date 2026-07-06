@@ -20,6 +20,10 @@ async def generation_node(
     
     return {
         "answer": answer,
+        "candidate_answers":[
+                *state["candidate_answers"],
+                answer
+            ],
         "generation_ms": (
             time.perf_counter() - start
         ) * 1000,

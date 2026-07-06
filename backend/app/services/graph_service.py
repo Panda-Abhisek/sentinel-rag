@@ -41,6 +41,9 @@ class GraphService:
             "generation_ms": 0.0,
             "evaluation_ms": 0.0,
             "total_ms": 0.0,
+            
+            "candidate_answers": [],
+            "candidate_evaluations": [],
         }
 
         final_state = await graph.ainvoke(

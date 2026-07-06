@@ -21,6 +21,10 @@ async def evaluation_node(
     
     return {
         "evaluation": evaluation,
+        "candidate_evaluations": [
+                *state["candidate_evaluations"],
+                evaluation,
+            ],
         "evaluation_ms": (
             time.perf_counter() - start
         ) * 1000,
