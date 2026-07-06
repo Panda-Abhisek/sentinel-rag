@@ -12,3 +12,10 @@ class CriticDecision(BaseModel):
 class PlannerDecision(BaseModel):
     planner_route: Literal["retrieve", "rewrite"]
     reason: str
+    
+    
+class ReflectionReport(BaseModel):
+    selected_attempt: int
+    attempts: int
+    confidence: float
+    reasoning: str

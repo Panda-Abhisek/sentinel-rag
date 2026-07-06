@@ -3,6 +3,7 @@ from langchain_core.documents import Document
 
 from app.evaluation.models import EvaluationReport
 from app.schemas.retrieval import QueryResponse
+from app.langgraph.models import ReflectionReport
 
 
 class SentinelState(TypedDict):
@@ -39,3 +40,5 @@ class SentinelState(TypedDict):
     candidate_answers: list[str]
     candidate_evaluations: list[EvaluationReport]
     selected_answer_index: int
+    
+    reflection: ReflectionReport | None

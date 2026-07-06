@@ -44,6 +44,7 @@ from app.services.critic_service import CriticService
 from app.services.query_rewriter_service import QueryRewriterService
 from app.services.answer_selector_service import AnswerSelectorService
 from app.services.planner_service import PlannerService
+from app.services.reflection_service import ReflectionService
 
 
 # ==========================================================
@@ -156,7 +157,8 @@ def get_graph_dependencies() -> SentinelContext:
         evaluation=get_evaluation_service(),
         critic=get_critic_service(),
         rewriter=get_rewriter_query(),
-        selector=get_answer_selector_service()
+        selector=get_answer_selector_service(),
+        reflection=get_reflection_service()
     )
 
 
@@ -180,5 +182,10 @@ def get_answer_selector_service() -> AnswerSelectorService:
 
 def get_planner_service() -> PlannerService:
     return PlannerService(
+        llm_service=get_llm_service()
+    )
+    
+def get_reflection_service() -> ReflectionService:
+    return ReflectionService(
         llm_service=get_llm_service()
     )
