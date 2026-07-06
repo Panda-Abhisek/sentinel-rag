@@ -29,39 +29,3 @@ async def query(
         question=request.question,
         top_k=request.top_k,
     )
-
-# @router.post(
-#     "/",
-#     response_model=HealingResponse,
-# )
-# async def query(
-#     request: QueryRequest,
-#     healing_service: HealingService = Depends(
-#         get_healing_service
-#     ),
-# ) -> HealingResponse:
-
-#     logger.info("Received query request.")
-
-#     return await healing_service.answer(
-#         request.question,
-#     )
-
-# @router.post(
-#     "/",
-#     response_model=QueryResponse,
-# )
-# async def query(
-#     request: QueryRequest,
-#     retrieval_service: RetrievalService = Depends(get_retrieval_service),
-# ) -> QueryResponse:
-#     """
-#     Query the RAG system.
-#     """
-
-#     logger.info("Received query request.")
-
-#     return await retrieval_service.retrieve_answer(
-#         question=request.question,
-#         top_k=request.top_k,
-#     )

@@ -1,7 +1,5 @@
 import logging
 
-from langchain_core.documents import Document
-
 from app.evaluation.models import AnswerEvaluation
 from app.evaluation.metrics import RetrievedResults
 from app.services.evaluation_llm import EvaluationLLM
@@ -54,7 +52,6 @@ class AnswerEvaluator:
             AnswerEvaluation,
             response.content,
         )
-        # print(evaluation)
 
         logger.info("Answer evaluation completed.")
 

@@ -24,11 +24,3 @@ async def retrieval_node(
             time.perf_counter() - start
         ) * 1000,
     }
-
-    # state["retrieved_documents"] = docs
-
-    # state["retrieval_ms"] = (
-    #     time.perf_counter() - start
-    # ) * 1000
-
-    # return state

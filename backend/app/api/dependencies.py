@@ -24,14 +24,6 @@ from app.evaluation.evaluation_service import EvaluationService
 from app.evaluation.hallucination_detector import HallucinationDetector
 from app.evaluation.retrieval_evaluator import RetrievalEvaluator
 
-from app.healing.answer_selector import AnswerSelector
-from app.healing.healing_policy import HealingPolicy
-from app.healing.healing_service import HealingService
-from app.healing.query_rewriter import QueryRewriter
-from app.healing.retry_strategy import RetryStrategy
-
-from app.rag.rewrite_prompt_builder import RewritePromptBuilder
-
 from app.services.llm_service import LLMService
 from app.services.retrieval_service import RetrievalService
 
@@ -100,49 +92,6 @@ def get_retrieval_service() -> RetrievalService:
     )
 
 
-# ==========================================================
-# Healing
-# ==========================================================
-
-@lru_cache
-def get_healing_policy() -> HealingPolicy:
-    return HealingPolicy()
-
-
-@lru_cache
-def get_rewrite_prompt_builder() -> RewritePromptBuilder:
-    return RewritePromptBuilder()
-
-
-@lru_cache
-def get_query_rewriter() -> QueryRewriter:
-    return QueryRewriter(
-        llm_service=get_llm_service(),
-        prompt_builder=get_rewrite_prompt_builder(),
-    )
-
-
-@lru_cache
-def get_retry_strategy() -> RetryStrategy:
-    return RetryStrategy(
-        query_rewriter=get_query_rewriter(),
-    )
-
-
-@lru_cache
-def get_answer_selector() -> AnswerSelector:
-    return AnswerSelector()
-
-
-@lru_cache
-def get_healing_service() -> HealingService:
-    return HealingService(
-        retrieval_service=get_retrieval_service(),
-        healing_policy=get_healing_policy(),
-        retry_strategy=get_retry_strategy(),
-        answer_selector=get_answer_selector(),
-    )
-    
 def get_generation_service() -> GenerationService:
     return GenerationService(
         llm_service=get_llm_service(),

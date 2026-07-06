@@ -1,5 +1,3 @@
-from langchain_core.documents import Document
-
 from app.evaluation.confidence_scorer import ConfidenceScorer
 from app.evaluation.metrics import MetricsCalculator, RetrievedResults
 from app.evaluation.models import RetrievalEvaluation

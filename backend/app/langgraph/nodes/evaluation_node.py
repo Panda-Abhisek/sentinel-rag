@@ -29,11 +29,3 @@ async def evaluation_node(
             time.perf_counter() - start
         ) * 1000,
     }
-
-    # state["evaluation"] = evaluation
-
-    # state["evaluation_ms"] = (
-    #     time.perf_counter() - start
-    # ) * 1000
-
-    # return state

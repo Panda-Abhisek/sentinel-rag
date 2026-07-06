@@ -2,7 +2,6 @@ from typing import Literal, TypedDict
 from langchain_core.documents import Document
 
 from app.evaluation.models import EvaluationReport
-from app.schemas.retrieval import QueryResponse
 from app.langgraph.models import ReflectionReport
 
 

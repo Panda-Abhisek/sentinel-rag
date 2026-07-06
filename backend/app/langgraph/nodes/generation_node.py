@@ -28,11 +28,3 @@ async def generation_node(
             time.perf_counter() - start
         ) * 1000,
     }
-
-    # state["answer"] = answer
-
-    # state["generation_ms"] = (
-    #     time.perf_counter() - start
-    # ) * 1000
-
-    # return state

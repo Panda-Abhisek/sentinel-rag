@@ -47,19 +47,6 @@ class EvaluationService:
             retrieval_results
         )
 
-        # answer_evaluation = await self._answer_evaluator.evaluate(
-        #     question=question,
-        #     retrieval_results=retrieval_results,
-        #     answer=answer,
-        # )
-        
-        # hallucination_evaluation = (
-        #     await self._hallucination_detector.evaluate(
-        #         retrieval_results=retrieval_results,
-        #         answer=answer,
-        #     )
-        # )
-        
         answer_evaluation, hallucination_evaluation = await asyncio.gather(
             self._answer_evaluator.evaluate(
                 question=question,
