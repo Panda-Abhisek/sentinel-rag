@@ -1,14 +1,13 @@
-from langchain_core.documents import Document
+import logging
 
 from app.evaluation.confidence_scorer import ConfidenceScorer
 from app.evaluation.metrics import MetricsCalculator, RetrievedResults
 from app.evaluation.models import RetrievalEvaluation
 
+logger = logging.getLogger(__name__)
+
 
 class RetrievalEvaluator:
-    """
-    Evaluates the quality of retrieved documents.
-    """
 
     def __init__(
         self,
@@ -22,15 +21,21 @@ class RetrievalEvaluator:
         self,
         results: RetrievedResults,
     ) -> RetrievalEvaluation:
-        """
-        Evaluate retrieval results.
-        """
+
+        logger.info("Evaluating retrieval quality for %d documents.", len(results))
 
         metrics = self._metrics_calculator.calculate(results)
 
         confidence = self._confidence_scorer.calculate(metrics)
 
         warnings = self._generate_warnings(metrics)
+
+        logger.info(
+            "Retrieval evaluation: confidence=%s (%.2f) | warnings=%d",
+            confidence.level,
+            confidence.score,
+            len(warnings),
+        )
 
         return RetrievalEvaluation(
             confidence=confidence,
@@ -39,9 +44,6 @@ class RetrievalEvaluator:
         )
 
     def _generate_warnings(self, metrics) -> list[str]:
-        """
-        Generate retrieval warnings.
-        """
 
         warnings: list[str] = []
 

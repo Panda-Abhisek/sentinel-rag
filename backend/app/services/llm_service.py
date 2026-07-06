@@ -1,22 +1,16 @@
 import logging
+import time
 import re
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage
 
 from app.core.config import settings
+from app.core.logging_config import LogUtils
 
 logger = logging.getLogger(__name__)
 
 
 class LLMService:
-    """
-    Handles all interactions with the Large Language Model.
-
-    Responsibilities:
-    - Initialize the LLM
-    - Generate grounded responses
-    - Hide provider-specific implementation details
-    """
 
     def __init__(self):
         self.llm = ChatGroq(
@@ -32,21 +26,13 @@ class LLMService:
         temperature: float | None = None,
         max_tokens: int | None = None,
     ) -> str:
-        """
-        Generate a response from the configured language model.
 
-        Optional generation parameters override the default model
-        configuration for a single request.
-        """
-
-        logger.info("Sending prompt to Groq.")
+        start = time.perf_counter()
+        LogUtils.entry(logger, "LLMService.generate", model=settings.LLM_MODEL)
 
         llm = self.llm
 
-        if (
-            temperature is not None
-            or max_tokens is not None
-        ):
+        if temperature is not None or max_tokens is not None:
             llm = ChatGroq(
                 api_key=settings.GROQ_API_KEY,
                 model=settings.LLM_MODEL,
@@ -67,14 +53,14 @@ class LLMService:
                 [HumanMessage(content=prompt)]
             )
 
-            logger.info("Received response from Groq.")
-
             answer = re.sub(
                 r"<think>.*?</think>",
                 "",
                 response.content,
                 flags=re.DOTALL,
             ).strip()
+
+            LogUtils.exit(logger, "LLMService.generate", start, answer_len=len(answer))
 
             return answer
 

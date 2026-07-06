@@ -1,6 +1,8 @@
 import asyncio
 import logging
 import time
+
+from app.core.logging_config import LogUtils
 from app.evaluation.models import EvaluationReport
 from app.evaluation.answer_evaluator import AnswerEvaluator
 from app.evaluation.retrieval_evaluator import RetrievalEvaluator
@@ -11,9 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 class EvaluationService:
-    """
-    Orchestrates all evaluation components.
-    """
 
     def __init__(
         self,
@@ -37,29 +36,14 @@ class EvaluationService:
         retrieval_results: RetrievedResults,
         answer: str,
     ) -> EvaluationReport:
-        """
-        Execute all evaluation pipelines and return a unified report.
-        """
 
-        logger.info("Starting evaluation pipeline.")
         start = time.perf_counter()
+        LogUtils.entry(logger, "EvaluationService.evaluate_pipeline")
+
         retrieval_evaluation = self._retrieval_evaluator.evaluate(
             retrieval_results
         )
 
-        # answer_evaluation = await self._answer_evaluator.evaluate(
-        #     question=question,
-        #     retrieval_results=retrieval_results,
-        #     answer=answer,
-        # )
-        
-        # hallucination_evaluation = (
-        #     await self._hallucination_detector.evaluate(
-        #         retrieval_results=retrieval_results,
-        #         answer=answer,
-        #     )
-        # )
-        
         answer_evaluation, hallucination_evaluation = await asyncio.gather(
             self._answer_evaluator.evaluate(
                 question=question,
@@ -72,9 +56,7 @@ class EvaluationService:
             ),
         )
 
-        logger.info("Evaluation pipeline completed in %.2f ms.",
-            (time.perf_counter() - start) * 1000,
-        )
+        LogUtils.exit(logger, "EvaluationService.evaluate_pipeline", start)
 
         return EvaluationReport(
             retrieval=retrieval_evaluation,
