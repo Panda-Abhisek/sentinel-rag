@@ -1,3 +1,4 @@
+import logging
 import time
 
 from app.langgraph.graph import graph
@@ -6,6 +7,9 @@ from app.langgraph.state import SentinelState
 from app.evaluation.models import LatencyMetrics
 from app.rag.source_mapper import SourceMapper
 from app.schemas.retrieval import QueryResponse
+from app.core.logging_config import LogUtils
+
+logger = logging.getLogger(__name__)
 
 
 class GraphService:
@@ -18,7 +22,9 @@ class GraphService:
         question: str,
         top_k: int,
     ):
-        request_start = time.perf_counter()
+
+        start = time.perf_counter()
+        LogUtils.entry(logger, "GraphService.execute", query=question)
 
         initial_state: SentinelState = {
             "query": question,
@@ -29,7 +35,7 @@ class GraphService:
             "answer": None,
 
             "evaluation": None,
-            
+
             "planner_route": "retrieve",
             "critic_route": "finish",
 
@@ -43,11 +49,11 @@ class GraphService:
             "generation_ms": 0.0,
             "evaluation_ms": 0.0,
             "total_ms": 0.0,
-            
+
             "candidate_answers": [],
             "candidate_evaluations": [],
             "selected_answer_index": 0,
-            
+
             "reflection": None
         }
 
@@ -57,10 +63,12 @@ class GraphService:
         )
 
         total_time = (
-            time.perf_counter() - request_start
+            time.perf_counter() - start
         ) * 1000
 
         final_state["total_ms"] = total_time
+
+        LogUtils.exit(logger, "GraphService.execute", start, total_ms=total_time)
 
         return QueryResponse(
             answer=final_state["answer"],

@@ -23,7 +23,11 @@ async def query(
     ),
 ):
 
-    logger.info("Received query request.")
+    logger.info(
+        "Received query request: top_k=%d | question=%s",
+        request.top_k,
+        request.question,
+    )
 
     return await graph_service.execute(
         question=request.question,

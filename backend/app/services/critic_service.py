@@ -1,6 +1,8 @@
 import logging
+import time
 
 from app.langgraph.models import CriticDecision
+from app.core.logging_config import LogUtils
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +18,9 @@ class CriticService:
         answer: str,
         evaluation,
     ) -> CriticDecision:
+
+        start = time.perf_counter()
+        LogUtils.entry(logger, "CriticService.review")
 
         prompt = f"""
             You are the quality reviewer for an enterprise Retrieval-Augmented Generation (RAG) system.
@@ -58,18 +63,18 @@ class CriticService:
             }}
             """
 
-        logger.info("Running critic.")
-
         response = await self.llm.generate(prompt)
 
         logger.info("Critic response:\n%s", response)
 
         try:
-            return CriticDecision.model_validate_json(response)
+            decision = CriticDecision.model_validate_json(response)
+            LogUtils.exit(logger, "CriticService.review", start, route=decision.critic_route)
+            return decision
 
         except Exception:
             logger.exception("Failed to parse critic output.")
-
+            LogUtils.exit(logger, "CriticService.review", start, route="fallback")
             return CriticDecision(
                 critic_route="finish",
                 reason="Critic output could not be parsed.",

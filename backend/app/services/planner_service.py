@@ -1,7 +1,10 @@
 import logging
+import time
 
 from pydantic import BaseModel
 from typing import Literal
+
+from app.core.logging_config import LogUtils
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +23,9 @@ class PlannerService:
         self,
         question: str,
     ) -> PlannerDecision:
+
+        start = time.perf_counter()
+        LogUtils.entry(logger, "PlannerService.plan")
 
         prompt = f"""
             You are the Planner Agent for an enterprise Retrieval-Augmented Generation (RAG) system.
@@ -57,23 +63,18 @@ class PlannerService:
             }}
             """
 
-        logger.info("Running planner.")
-
         response = await self.llm.generate(prompt)
 
-        logger.info(
-            "Planner response:\n%s",
-            response,
-        )
+        logger.info("Planner response:\n%s", response)
 
         try:
-            return PlannerDecision.model_validate_json(response)
+            decision = PlannerDecision.model_validate_json(response)
+            LogUtils.exit(logger, "PlannerService.plan", start, route=decision.planner_route)
+            return decision
 
         except Exception:
-            logger.exception(
-                "Failed to parse planner output."
-            )
-
+            logger.exception("Failed to parse planner output.")
+            LogUtils.exit(logger, "PlannerService.plan", start, route="fallback")
             return PlannerDecision(
                 planner_route="retrieve",
                 reason="Planner output could not be parsed. Falling back to direct retrieval.",

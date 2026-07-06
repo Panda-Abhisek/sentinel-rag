@@ -1,5 +1,3 @@
-# app/vectorstore/qdrant_client.py
-
 from typing import Optional
 
 import logging
@@ -10,20 +8,12 @@ from langchain_qdrant import QdrantVectorStore
 
 from app.core.config import settings
 from app.embeddings.embedding_model import get_bge_embeddings
+from app.core.logging_config import LogUtils
 
 logger = logging.getLogger(__name__)
 
 
 class QdrantService:
-    """
-    Handles all interactions with the Qdrant vector database.
-
-    Responsibilities:
-    - Store document embeddings
-    - Retrieve documents
-    - Delete collections (later)
-    - Manage collections (later)
-    """
 
     def __init__(
         self,
@@ -44,7 +34,7 @@ class QdrantService:
                 embedding=get_bge_embeddings(),
             )
         return self.vector_store
-    
+
     def store_documents(
         self,
         documents: list[Document],
@@ -52,19 +42,8 @@ class QdrantService:
         collection_name: str = settings.QDRANT_COLLECTION,
         recreate_collection: bool = False,
     ) -> None:
-        """
-        Stores document embeddings inside a Qdrant collection.
 
-        Args:
-            documents: List of LangChain Document objects.
-            embeddings: Embedding model instance.
-            collection_name: Target Qdrant collection.
-            recreate_collection: Recreate collection if it already exists.
-        """
-
-        logger.info(
-            f"Storing {len(documents)} chunks into collection '{collection_name}'..."
-        )
+        LogUtils.entry(logger, "QdrantService.store_documents", chunks=len(documents), collection=collection_name)
 
         try:
             QdrantVectorStore.from_documents(
@@ -77,36 +56,32 @@ class QdrantService:
             )
 
             logger.info(
-                f"Successfully stored {len(documents)} chunks in '{collection_name}'."
+                "Successfully stored %d chunks in '%s'.",
+                len(documents),
+                collection_name,
             )
 
         except Exception:
             logger.exception("Failed to store documents in Qdrant.")
             raise
-        
-        
+
+
     def search(self, query: str, top_k: int = 5) -> list[tuple[Document, float]]:
-        """
-        Retrieves the most relevant documents from Qdrant.
-        """
 
         try:
             documents = self._get_vector_store().similarity_search_with_score(
                 query=query,
                 k=top_k,
             )
+
             logger.info(
-                "Searching collection '%s'.",
-                settings.QDRANT_COLLECTION,
-            )
-            
-            logger.info(
-                "Retrieved %d documents.",
+                "Retrieved %d documents from collection '%s'.",
                 len(documents),
+                settings.QDRANT_COLLECTION,
             )
 
             return documents
 
         except Exception:
             logger.exception("Failed to search Qdrant.")
-            raise   
+            raise

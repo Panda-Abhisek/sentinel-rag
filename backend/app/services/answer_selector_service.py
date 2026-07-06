@@ -1,4 +1,8 @@
+import logging
+
 from app.evaluation.models import EvaluationReport
+
+logger = logging.getLogger(__name__)
 
 
 class AnswerSelectorService:
@@ -21,8 +25,11 @@ class AnswerSelectorService:
                 + evaluation.answer.completeness
             ) - evaluation.hallucination.hallucination_score
 
+            logger.debug("Candidate %d composite_score=%.2f", i, score)
+
             if score > best_score:
                 best_score = score
                 best_index = i
 
+        logger.info("Selected candidate %d with score=%.2f", best_index, best_score)
         return best_index

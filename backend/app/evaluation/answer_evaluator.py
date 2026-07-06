@@ -1,4 +1,5 @@
 import logging
+import time
 
 from app.evaluation.models import AnswerEvaluation
 from app.evaluation.metrics import RetrievedResults
@@ -6,14 +7,12 @@ from app.services.evaluation_llm import EvaluationLLM
 from app.rag.evaluation_prompt_builder import EvaluationPromptBuilder
 from app.core.config import settings
 from app.evaluation.json_parser import parse_json_response
+from app.core.logging_config import LogUtils
 
 logger = logging.getLogger(__name__)
 
 
 class AnswerEvaluator:
-    """
-    Evaluates the quality of a generated answer using an LLM-as-a-Judge.
-    """
 
     def __init__(self) -> None:
         self._llm = EvaluationLLM.get_llm()
@@ -24,9 +23,9 @@ class AnswerEvaluator:
         retrieval_results: RetrievedResults,
         answer: str,
     ) -> AnswerEvaluation:
-        """
-        Evaluate the generated answer.
-        """
+
+        start = time.perf_counter()
+        LogUtils.entry(logger, "AnswerEvaluator.evaluate")
 
         contexts = [
             document.page_content[:settings.EVALUATION_MAX_CONTEXT_LENGTH]
@@ -39,10 +38,8 @@ class AnswerEvaluator:
             answer=answer,
         )
 
-        logger.info("Running answer evaluation.")
-
         response = await self._llm.ainvoke(prompt)
-        
+
         logger.info(
             "Raw LLM response:\n%s",
             response.content,
@@ -53,6 +50,6 @@ class AnswerEvaluator:
             response.content,
         )
 
-        logger.info("Answer evaluation completed.")
+        LogUtils.exit(logger, "AnswerEvaluator.evaluate", start)
 
         return evaluation

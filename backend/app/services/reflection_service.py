@@ -1,6 +1,8 @@
 import logging
+import time
 
 from app.langgraph.models import ReflectionReport
+from app.core.logging_config import LogUtils
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +18,9 @@ class ReflectionService:
         evaluations,
         selected_index: int,
     ) -> ReflectionReport:
+
+        start = time.perf_counter()
+        LogUtils.entry(logger, "ReflectionService.reflect", selected=selected_index)
 
         prompt = f"""
             You are the Reflection Agent of an enterprise Retrieval-Augmented Generation system.
@@ -45,25 +50,18 @@ class ReflectionService:
             }}
             """
 
-        logger.info("Running reflection agent.")
-
         response = await self.llm.generate(prompt)
 
-        logger.info(
-            "Reflection response:\n%s",
-            response,
-        )
+        logger.info("Reflection response:\n%s", response)
 
         try:
-            return ReflectionReport.model_validate_json(
-                response
-            )
+            report = ReflectionReport.model_validate_json(response)
+            LogUtils.exit(logger, "ReflectionService.reflect", start, confidence=report.confidence)
+            return report
 
         except Exception:
 
-            logger.exception(
-                "Reflection parsing failed."
-            )
+            logger.exception("Reflection parsing failed.")
 
             evaluation = evaluations[selected_index]
 
@@ -73,6 +71,8 @@ class ReflectionService:
                 + evaluation.answer.context_utilization
                 + evaluation.answer.completeness
             ) / 4
+
+            LogUtils.exit(logger, "ReflectionService.reflect", start, confidence=confidence, fallback=True)
 
             return ReflectionReport(
                 attempts=len(answers),

@@ -1,3 +1,5 @@
+import logging
+
 from langgraph.graph import START, END, StateGraph
 
 from app.langgraph.state import SentinelState
@@ -14,6 +16,8 @@ from app.langgraph.router import critic_router
 from app.langgraph.nodes.selector_node import selector_node
 from app.langgraph.nodes.reflection_node import reflection_node
 
+
+logger = logging.getLogger(__name__)
 
 builder = StateGraph(state_schema=SentinelState, context_schema=SentinelContext)
 
@@ -51,3 +55,7 @@ builder.add_edge("selector", "reflection")
 builder.add_edge("reflection", END)
 
 graph = builder.compile()
+
+logger.info(
+    "Graph compiled with 8 nodes: planner -> rewrite -> retrieve -> generate -> evaluate -> critic -> selector -> reflection"
+)
