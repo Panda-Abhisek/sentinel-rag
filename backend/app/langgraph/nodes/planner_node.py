@@ -36,20 +36,25 @@ async def planner_node(
         decision = await runtime.context.planner.plan(
             state["query"]
         )
+        
+        manager.add_token_usage(
+            "planner",
+            decision.token_usage,
+        )
 
         timer.set_decision(
-            decision=decision.planner_route,
-            reason=decision.reason,
+            decision=decision.decision.planner_route,
+            reason=decision.decision.reason,
         )
 
     LogUtils.exit(
         logger,
         "planner",
         start,
-        route=decision.planner_route,
+        route=decision.decision.planner_route,
     )
 
     return {
-        "planner_route": decision.planner_route,
-        "planner_reason": decision.reason,
+        "planner_route": decision.decision.planner_route,
+        "planner_reason": decision.decision.reason,
     }

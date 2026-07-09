@@ -19,11 +19,6 @@ async def generation_node(
 
     start = time.perf_counter()
     LogUtils.entry(logger, "generation", query=state["query"])
-
-    # answer = await runtime.context.generation.generate_answer(
-    #     question=state["query"],
-    #     documents=state["retrieved_documents"],
-    # )
     
     manager = runtime.context.tracing.manager
 
@@ -33,25 +28,30 @@ async def generation_node(
         retry=state.get("retry_count", 0),
     ) as timer:
 
-        answer = await runtime.context.generation.generate_answer(
+        llm_response = await runtime.context.generation.generate_answer(
             question=state["query"],
             documents=state["retrieved_documents"]
+        )
+        
+        manager.add_token_usage(
+            "generation",
+            llm_response.token_usage,
         )
 
         timer.set_decision(
             decision="generation_complete",
-            reason=f"Answer generated successfully: {answer[:10]}",
+            reason=f"Answer generated successfully.",
         )
 
     generation_ms = (time.perf_counter() - start) * 1000
 
-    LogUtils.exit(logger, "generation", start, answer_len=len(answer))
+    LogUtils.exit(logger, "generation", start, answer_len=len(llm_response.answer))
 
     return {
-        "answer": answer,
+        "answer": llm_response.answer,
         "candidate_answers":[
                 *state["candidate_answers"],
-                answer
+                llm_response.answer
             ],
         "generation_ms": generation_ms,
     }

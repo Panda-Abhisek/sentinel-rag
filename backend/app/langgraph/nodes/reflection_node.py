@@ -28,19 +28,24 @@ async def reflection_node(
         retry=state.get("retry_count", 0),
     ) as timer:
 
-        report = await runtime.context.reflection.reflect(
+        reflection_result = await runtime.context.reflection.reflect(
             selected_index=state["selected_answer_index"],
             answers=state["candidate_answers"],
             evaluations=state["candidate_evaluations"],
         )
+        
+        manager.add_token_usage(
+            "reflection",
+            reflection_result.token_usage,
+        )
 
         timer.set_decision(
             decision="reflection_complete",
-            reason=f"Reflection generated: {report.selected_attempt}",
+            reason=f"Reflection generated: {reflection_result.result.selected_attempt}",
         )
 
-    LogUtils.exit(logger, "reflection", start, confidence=report.confidence)
+    LogUtils.exit(logger, "reflection", start, confidence=reflection_result.result.confidence)
 
     return {
-        "reflection": report,
+        "reflection": reflection_result.result,
     }

@@ -28,21 +28,26 @@ async def rewrite_node(
         retry=state.get("retry_count", 0),
     ) as timer:
 
-        rewritten_query = await runtime.context.rewriter.rewrite(
+        result = await runtime.context.rewriter.rewrite(
             question=state["query"],
             answer=state["answer"],
             evaluation=state["evaluation"],
         )
+        
+        manager.add_token_usage(
+            "rewrite",
+            result.token_usage,
+        )
 
         timer.set_decision(
             decision="rewrite_complete",
-            reason=f"Query rewritten: {rewritten_query}",
+            reason=f"Query rewritten: {result.rewritten_query}",
         )
 
-    LogUtils.exit(logger, "rewrite", start, rewritten=bool(rewritten_query))
+    LogUtils.exit(logger, "rewrite", start, rewritten=bool(result.rewritten_query))
 
     return {
-        "rewritten_query": rewritten_query,
-        "query": rewritten_query or state["query"],
+        "rewritten_query": result.rewritten_query,
+        "query": result.rewritten_query or state["query"],
         "retry_count": state["retry_count"] + 1,
     }
