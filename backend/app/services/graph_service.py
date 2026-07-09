@@ -1,3 +1,4 @@
+from dataclasses import asdict
 import logging
 import time
 
@@ -61,6 +62,14 @@ class GraphService:
             initial_state,
             context=self.dependencies
         )
+        
+        summary = self.dependencies.tracing.manager.complete(
+            confidence=final_state["evaluation"].answer.overall_score,
+            selected_attempt=final_state["selected_answer_index"],
+        )
+        summary_dict = asdict(summary)
+        
+        logger.info("Execution Summary: %s",summary_dict)
 
         total_time = (
             time.perf_counter() - start

@@ -6,6 +6,8 @@ from langgraph.runtime import Runtime
 from app.langgraph.dependencies import SentinelContext
 from app.langgraph.state import SentinelState
 from app.core.logging_config import LogUtils
+from app.observability.timing import NodeTimer
+from app.observability.constants import NodeNames
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +20,28 @@ async def generation_node(
     start = time.perf_counter()
     LogUtils.entry(logger, "generation", query=state["query"])
 
-    answer = await runtime.context.generation.generate_answer(
-        question=state["query"],
-        documents=state["retrieved_documents"],
-    )
+    # answer = await runtime.context.generation.generate_answer(
+    #     question=state["query"],
+    #     documents=state["retrieved_documents"],
+    # )
+    
+    manager = runtime.context.tracing.manager
+
+    with NodeTimer(
+        manager=manager,
+        node_name=NodeNames.GENERATION,
+        retry=state.get("retry_count", 0),
+    ) as timer:
+
+        answer = await runtime.context.generation.generate_answer(
+            question=state["query"],
+            documents=state["retrieved_documents"]
+        )
+
+        timer.set_decision(
+            decision="generation_complete",
+            reason=f"Answer generated successfully: {answer[:10]}",
+        )
 
     generation_ms = (time.perf_counter() - start) * 1000
 

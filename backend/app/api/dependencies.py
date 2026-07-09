@@ -37,6 +37,7 @@ from app.services.query_rewriter_service import QueryRewriterService
 from app.services.answer_selector_service import AnswerSelectorService
 from app.services.planner_service import PlannerService
 from app.services.reflection_service import ReflectionService
+from app.observability.tracing import TracingContext
 
 
 # ==========================================================
@@ -107,7 +108,8 @@ def get_graph_dependencies() -> SentinelContext:
         critic=get_critic_service(),
         rewriter=get_rewriter_query(),
         selector=get_answer_selector_service(),
-        reflection=get_reflection_service()
+        reflection=get_reflection_service(),
+        tracing=get_tracing_context()
     )
 
 
@@ -138,3 +140,7 @@ def get_reflection_service() -> ReflectionService:
     return ReflectionService(
         llm_service=get_llm_service()
     )
+    
+    
+def get_tracing_context() -> TracingContext:
+    return TracingContext()

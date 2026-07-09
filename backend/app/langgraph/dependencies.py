@@ -8,6 +8,7 @@ from app.services.query_rewriter_service import QueryRewriterService
 from app.services.answer_selector_service import AnswerSelectorService
 from app.services.planner_service import PlannerService
 from app.services.reflection_service import ReflectionService
+from app.observability.tracing import TracingContext
 
 
 @dataclass
@@ -20,3 +21,5 @@ class SentinelContext:
     rewriter: QueryRewriterService
     selector: AnswerSelectorService
     reflection: ReflectionService
+    
+    tracing: TracingContext
