@@ -58,7 +58,7 @@ class ReflectionService:
             content = response.content
             if "<think>" in content:
                 content = content.split("</think>")[-1].strip()
-            logger.info("Reflection Content: \n%s", content)
+            logger.info("Reflection Content:\n%s", content)
             report = ReflectionReport.model_validate_json(content)
             logger.info("Exiting ReflectionService.reflect | duration_ms=%.2f | confidence=%s", (time.perf_counter() - start) * 1000, report.confidence)
             return ReflectionResult(

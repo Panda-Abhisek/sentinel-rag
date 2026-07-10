@@ -78,9 +78,7 @@ class GraphService:
             confidence=final_state["evaluation"].answer.overall_score,
             selected_attempt=final_state["selected_answer_index"],
         )
-        
-        logger.info("Summary: \n%s", summary)
-        
+
         runtime_logger.emit(
             ObservabilityEvent(
                 event="graph_finished",
@@ -90,13 +88,12 @@ class GraphService:
                 },
             )
         )
-        
-        summary_dict = summary.to_dict()
-        logger.info("Execution Summary: %s",summary_dict)
 
         total_time = (
             time.perf_counter() - start
         ) * 1000
+
+        logger.info("Exiting GraphService.execute | duration_ms=%.2f | confidence=%.2f", total_time, final_state["evaluation"].answer.overall_score)
 
         final_state["total_ms"] = total_time
 

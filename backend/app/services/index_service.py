@@ -27,7 +27,6 @@ class IndexService:
         start = time.perf_counter()
         logger.info("Entering IndexService.process_and_index_pdf | file=%s", original_filename)
 
-        logger.info("Step 1/4: Loading document: %s", file_path)
         loader = get_document_loader(file_path)
 
         try:
@@ -36,7 +35,6 @@ class IndexService:
             logger.exception("Failed to load PDF")
             raise
 
-        logger.info("Step 2/4: Chunking document content...")
         splitter = get_character_text_splitter()
         chunked_documents = splitter.split_documents(raw_documents)
 
@@ -48,10 +46,8 @@ class IndexService:
             chunk.metadata["project"] = settings.PROJECT_NAME
             chunk.metadata["chunk_id"] = index
 
-        logger.info("Step 3/4: Preparing embedding service...")
         embeddings_model = get_bge_embeddings()
 
-        logger.info("Step 4/4: Generating vectors and uploading to Qdrant collection '%s'...", collection_name)
         qdrant_service = QdrantService(
             url=qdrant_url,
             api_key=qdrant_api_key

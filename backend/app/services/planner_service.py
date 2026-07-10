@@ -69,7 +69,7 @@ class PlannerService:
             if "<think>" in ans:
                 ans = ans.split("</think>")[-1].strip()
             decision = PlannerDecision.model_validate_json(ans)
-            logger.info("Planner Decision: \n%s", decision)
+            logger.info("Planner Decision:\n%s", decision)
             logger.info("Exiting PlannerService.plan | duration_ms=%.2f | route=%s", (time.perf_counter() - start) * 1000, decision.planner_route)
             return PlannerResult(
                 decision=decision,

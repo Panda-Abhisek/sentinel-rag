@@ -60,14 +60,14 @@ class QueryRewriterService:
                 """
 
         llm_response = await self.llm.generate(prompt)
-        logger.info("Query rewrite response: \n%s", llm_response)
+        logger.info("Query rewrite response:\n%s", llm_response)
 
         content = llm_response.content
         if "<think>" in content:
             content = content.split("</think>")[-1].strip()
 
         rewritten_query = content.strip()
-        logger.info("Query rewrite result: \n%s", rewritten_query)
+        logger.info("Query rewrite result:\n%s", rewritten_query)
 
         if not rewritten_query:
             logger.warning("Rewriter returned an empty query. Using original query.")

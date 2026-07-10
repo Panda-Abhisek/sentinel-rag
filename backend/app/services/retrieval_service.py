@@ -1,4 +1,5 @@
 import logging
+import time
 
 from langchain_core.documents import Document
 
@@ -17,16 +18,13 @@ class RetrievalService:
         top_k: int,
     ) -> list[tuple[Document, float]]:
 
-        logger.info(
-            "Retrieving top_k=%d for query=%s",
-            top_k,
-            question,
-        )
+        start = time.perf_counter()
+        logger.info("Entering RetrievalService.retrieve_documents | top_k=%d | query=%s", top_k, question)
 
         docs = self.qdrant_service.search(
             query=question,
             top_k=top_k,
         )
 
-        logger.info("Retrieved %d documents.", len(docs))
+        logger.info("Exiting RetrievalService.retrieve_documents | duration_ms=%.2f | docs=%d", (time.perf_counter() - start) * 1000, len(docs))
         return docs
