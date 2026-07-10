@@ -8,6 +8,7 @@ from app.evaluation.models import LatencyMetrics
 from app.rag.source_mapper import SourceMapper
 from app.schemas.retrieval import QueryResponse
 from app.observability.events import ObservabilityEvent
+from app.observability.langsmith import trace_graph
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,13 @@ class GraphService:
     def __init__(self, dependencies: SentinelContext):
         self.dependencies = dependencies
 
+    @trace_graph(
+        "SentinelRAG",
+        get_metadata=lambda self, *a, **kw: {
+            "request_id": self.dependencies.tracing.request_id,
+            "project": "SentinelRAG",
+        },
+    )
     async def execute(
         self,
         question: str,

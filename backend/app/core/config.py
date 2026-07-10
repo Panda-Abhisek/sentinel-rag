@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     EVALUATION_SCORE_HIGH: float = 0.85
     EVALUATION_SCORE_MEDIUM: float = 0.65
 
+    # LangSmith
+    LANGSMITH_API_KEY: Optional[str] = None
+    LANGSMITH_TRACING: bool = False
+    LANGSMITH_PROJECT: str = "SentinelRAG"
+
     @property
     def QDRANT_URL(self) -> str:
         return f"http://{self.QDRANT_HOST}:{self.QDRANT_PORT}"
