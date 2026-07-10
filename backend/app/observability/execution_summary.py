@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from datetime import datetime, timezone
 
 from app.observability.models import ExecutionSummary, NodeExecution, TokenUsage
@@ -9,6 +10,8 @@ class ExecutionSummaryManager:
         # Keeps track of currently executing nodes
         self._active_nodes: dict[str, NodeExecution] = {}
 
+    def to_dict(self) -> dict:
+        return asdict(self)
 
     def start_node(self, node_name: str, retry: int = 0) -> None:
         """

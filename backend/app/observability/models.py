@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import Any
 
@@ -9,6 +9,9 @@ class TokenUsage:
     total_tokens: int = 0
     estimated_cost: float = 0.0
     model: str = ""
+
+    def to_dict(self) -> dict:
+        return asdict(self)
     
 @dataclass
 class NodeExecution:
@@ -23,6 +26,9 @@ class NodeExecution:
     error: str | None = None
     token_usage: TokenUsage = field(default_factory=TokenUsage)
     metadata: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict:
+        return asdict(self)
     
 @dataclass
 class ExecutionSummary:
@@ -34,3 +40,6 @@ class ExecutionSummary:
     retries: int = 0
     final_confidence: float = 0.0
     selected_attempt: int = 0
+
+    def to_dict(self) -> dict:
+        return asdict(self)
