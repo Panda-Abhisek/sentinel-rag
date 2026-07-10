@@ -1,7 +1,6 @@
 import logging
 import time
 
-from app.core.logging_config import LogUtils
 from app.services.models import RewriteResult
 
 logger = logging.getLogger(__name__)
@@ -20,7 +19,7 @@ class QueryRewriterService:
     ) -> RewriteResult:
 
         start = time.perf_counter()
-        LogUtils.entry(logger, "QueryRewriterService.rewrite")
+        logger.info("Entering QueryRewriterService.rewrite")
 
         if answer is None or evaluation is None:
 
@@ -72,13 +71,13 @@ class QueryRewriterService:
 
         if not rewritten_query:
             logger.warning("Rewriter returned an empty query. Using original query.")
-            LogUtils.exit(logger, "QueryRewriterService.rewrite", start, rewritten=False)
+            logger.info("Exiting QueryRewriterService.rewrite | duration_ms=%.2f | rewritten=%s", (time.perf_counter() - start) * 1000, False)
             return RewriteResult(
                 rewritten_query=question,
                 token_usage=llm_response.usage,
             )
 
-        LogUtils.exit(logger, "QueryRewriterService.rewrite", start, rewritten=True)
+        logger.info("Exiting QueryRewriterService.rewrite | duration_ms=%.2f | rewritten=%s", (time.perf_counter() - start) * 1000, True)
         return RewriteResult(
             rewritten_query=rewritten_query,
             token_usage=llm_response.usage

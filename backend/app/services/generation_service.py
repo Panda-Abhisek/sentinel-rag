@@ -4,7 +4,6 @@ import time
 from app.rag.context_builder import ContextBuilder
 from app.rag.prompt_builder import PromptBuilder
 from app.services.llm_service import LLMService
-from app.core.logging_config import LogUtils
 from app.services.models import GenerationResult
 
 logger = logging.getLogger(__name__)
@@ -16,7 +15,7 @@ class GenerationService:
     async def generate_answer(self, documents, question) -> GenerationResult:
 
         start = time.perf_counter()
-        LogUtils.entry(logger, "GenerationService.generate_answer", docs=len(documents))
+        logger.info("Entering GenerationService.generate_answer | docs=%d", len(documents))
 
         context = ContextBuilder.build_context(documents)
 
@@ -37,7 +36,7 @@ class GenerationService:
 
         answer = await self.llm_service.generate(prompt)
         # logger.info("Gen Service answer: \n%s", answer)
-        LogUtils.exit(logger, "GenerationService.generate_answer", start, answer_len=len(answer.content))
+        logger.info("Exiting GenerationService.generate_answer | duration_ms=%.2f | answer_len=%d", (time.perf_counter() - start) * 1000, len(answer.content))
         return GenerationResult(
             answer=answer.content,
             token_usage=answer.usage

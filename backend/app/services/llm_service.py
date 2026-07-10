@@ -5,7 +5,6 @@ from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage
 
 from app.core.config import settings
-from app.core.logging_config import LogUtils
 from app.models.LLMResponse import LLMResponse
 from app.observability.models import TokenUsage
 
@@ -30,7 +29,7 @@ class LLMService:
     ) -> LLMResponse:
 
         start = time.perf_counter()
-        LogUtils.entry(logger, "LLMService.generate", model=settings.LLM_MODEL)
+        logger.info("Entering LLMService.generate | model=%s", settings.LLM_MODEL)
 
         llm = self.llm
 
@@ -60,7 +59,7 @@ class LLMService:
             logger.info("Response Metadata: %s", response.response_metadata)
             logger.info("Usage Metadata: %s", getattr(response, "usage_metadata", None))
 
-            LogUtils.exit(logger, "LLMService.generate", start, answer_len=len(answer))
+            logger.info("Exiting LLMService.generate | duration_ms=%.2f | answer_len=%d", (time.perf_counter() - start) * 1000, len(answer))
 
             return LLMResponse(
                 content=answer,

@@ -4,7 +4,6 @@ from pathlib import Path
 from datetime import datetime, timezone
 from typing import Optional
 
-from app.core.logging_config import LogUtils
 from app.services.document_loader import get_document_loader
 from app.services.text_splitter import get_character_text_splitter
 from app.embeddings.embedding_model import get_bge_embeddings
@@ -26,7 +25,7 @@ class IndexService:
     ) -> IndexResult:
 
         start = time.perf_counter()
-        LogUtils.entry(logger, "IndexService.process_and_index_pdf", file=original_filename)
+        logger.info("Entering IndexService.process_and_index_pdf | file=%s", original_filename)
 
         logger.info("Step 1/4: Loading document: %s", file_path)
         loader = get_document_loader(file_path)
@@ -64,7 +63,7 @@ class IndexService:
             collection_name=collection_name,
         )
 
-        LogUtils.exit(logger, "IndexService.process_and_index_pdf", start, chunks=len(chunked_documents))
+        logger.info("Exiting IndexService.process_and_index_pdf | duration_ms=%.2f | chunks=%d", (time.perf_counter() - start) * 1000, len(chunked_documents))
 
         return IndexResult(
             status="success",

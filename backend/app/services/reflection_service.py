@@ -2,7 +2,6 @@ import logging
 import time
 
 from app.langgraph.models import ReflectionReport
-from app.core.logging_config import LogUtils
 from app.services.models import ReflectionResult
 
 logger = logging.getLogger(__name__)
@@ -21,7 +20,7 @@ class ReflectionService:
     ) -> ReflectionResult:
 
         start = time.perf_counter()
-        LogUtils.entry(logger, "ReflectionService.reflect", selected=selected_index)
+        logger.info("Entering ReflectionService.reflect | selected=%d", selected_index)
 
         prompt = f"""
             You are the Reflection Agent of an enterprise Retrieval-Augmented Generation system.
@@ -61,7 +60,7 @@ class ReflectionService:
                 content = content.split("</think>")[-1].strip()
             logger.info("Reflection Content: \n%s", content)
             report = ReflectionReport.model_validate_json(content)
-            LogUtils.exit(logger, "ReflectionService.reflect", start, confidence=report.confidence)
+            logger.info("Exiting ReflectionService.reflect | duration_ms=%.2f | confidence=%s", (time.perf_counter() - start) * 1000, report.confidence)
             return ReflectionResult(
                 result=report,
                 token_usage=response.usage
@@ -80,7 +79,7 @@ class ReflectionService:
                 + evaluation.answer.completeness
             ) / 4
 
-            LogUtils.exit(logger, "ReflectionService.reflect", start, confidence=confidence, fallback=True)
+            logger.info("Exiting ReflectionService.reflect | duration_ms=%.2f | confidence=%s | fallback=%s", (time.perf_counter() - start) * 1000, confidence, True)
 
             return ReflectionResult(
                 result = ReflectionReport(

@@ -8,7 +8,7 @@ from langchain_qdrant import QdrantVectorStore
 
 from app.core.config import settings
 from app.embeddings.embedding_model import get_bge_embeddings
-from app.core.logging_config import LogUtils
+
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ class QdrantService:
         recreate_collection: bool = False,
     ) -> None:
 
-        LogUtils.entry(logger, "QdrantService.store_documents", chunks=len(documents), collection=collection_name)
+        logger.info("Entering QdrantService.store_documents | chunks=%d | collection=%s", len(documents), collection_name)
 
         try:
             QdrantVectorStore.from_documents(

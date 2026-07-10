@@ -36,25 +36,6 @@ def setup_logging() -> None:
         logging.getLogger(logger_name).setLevel(logging.WARNING)
 
 
-class LogUtils:
-
-    @staticmethod
-    def entry(logger: logging.Logger, node: str, **kwargs):
-        extras = " | ".join(f"{k}={v}" for k, v in kwargs.items())
-        logger.info("Entering %s | %s", node, extras)
-
-    @staticmethod
-    def exit(logger: logging.Logger, node: str, start: float, **kwargs):
-        duration_ms = (time.perf_counter() - start) * 1000
-        extras = " | ".join(f"{k}={v}" for k, v in kwargs.items())
-        logger.info(
-            "Exiting %s | duration_ms=%.2f | %s",
-            node,
-            duration_ms,
-            extras,
-        )
-
-
 def add_correlation_middleware(app: FastAPI) -> None:
     logger = logging.getLogger("api")
 

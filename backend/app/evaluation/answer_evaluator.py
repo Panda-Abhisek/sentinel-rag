@@ -7,7 +7,6 @@ from app.services.evaluation_llm import EvaluationLLM
 from app.rag.evaluation_prompt_builder import EvaluationPromptBuilder
 from app.core.config import settings
 from app.evaluation.json_parser import parse_json_response
-from app.core.logging_config import LogUtils
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +24,7 @@ class AnswerEvaluator:
     ) -> AnswerEvaluation:
 
         start = time.perf_counter()
-        LogUtils.entry(logger, "AnswerEvaluator.evaluate")
+        logger.info("Entering AnswerEvaluator.evaluate")
 
         contexts = [
             document.page_content[:settings.EVALUATION_MAX_CONTEXT_LENGTH]
@@ -50,6 +49,6 @@ class AnswerEvaluator:
             response.content,
         )
 
-        LogUtils.exit(logger, "AnswerEvaluator.evaluate", start)
+        logger.info("Exiting AnswerEvaluator.evaluate | duration_ms=%.2f", (time.perf_counter() - start) * 1000)
 
         return evaluation
