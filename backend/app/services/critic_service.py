@@ -65,8 +65,6 @@ class CriticService:
 
         response = await self.llm.generate(prompt)
 
-        # logger.info("Critic response:\n%s", response)
-
         try:
             ans = response.content
             if "<think>" in ans:

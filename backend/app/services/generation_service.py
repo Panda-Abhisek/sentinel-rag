@@ -35,7 +35,6 @@ class GenerationService:
         )
 
         answer = await self.llm_service.generate(prompt)
-        # logger.info("Gen Service answer: \n%s", answer)
         logger.info("Exiting GenerationService.generate_answer | duration_ms=%.2f | answer_len=%d", (time.perf_counter() - start) * 1000, len(answer.content))
         return GenerationResult(
             answer=answer.content,

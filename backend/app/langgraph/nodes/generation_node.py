@@ -1,4 +1,3 @@
-import logging
 import time
 
 from langgraph.runtime import Runtime
@@ -7,8 +6,6 @@ from app.langgraph.dependencies import SentinelContext
 from app.langgraph.state import SentinelState
 from app.observability.timing import NodeTimer
 from app.observability.constants import NodeNames
-
-logger = logging.getLogger(__name__)
 
 
 async def generation_node(

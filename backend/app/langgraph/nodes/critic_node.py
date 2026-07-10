@@ -1,13 +1,9 @@
-import logging
-
 from langgraph.runtime import Runtime
 
 from app.langgraph.state import SentinelState
 from app.langgraph.dependencies import SentinelContext
 from app.observability.timing import NodeTimer
 from app.observability.constants import NodeNames
-
-logger = logging.getLogger(__name__)
 
 async def critic_node(
     state: SentinelState,

@@ -1,4 +1,3 @@
-import logging
 import time
 
 from langgraph.runtime import Runtime
@@ -7,8 +6,6 @@ from app.langgraph.dependencies import SentinelContext
 from app.langgraph.state import SentinelState
 from app.observability.timing import NodeTimer
 from app.observability.constants import NodeNames
-
-logger = logging.getLogger(__name__)
 
 
 async def evaluation_node(
@@ -36,7 +33,7 @@ async def evaluation_node(
 
         timer.set_decision(
             decision="evaluation_complete",
-            reason={evaluation.answer.faithfulness, evaluation.answer.overall_score}
+            reason=f"faithfulness={evaluation.answer.faithfulness}, overall={evaluation.answer.overall_score}"
         )
 
     evaluation_ms = (time.perf_counter() - start) * 1000
