@@ -1,11 +1,9 @@
 import logging
-import time
 
 from langgraph.runtime import Runtime
 
 from app.langgraph.state import SentinelState
 from app.langgraph.dependencies import SentinelContext
-from app.core.logging_config import LogUtils
 from app.observability.timing import NodeTimer
 from app.observability.constants import NodeNames
 
@@ -17,13 +15,12 @@ async def rewrite_node(
     runtime: Runtime[SentinelContext],
 ):
 
-    start = time.perf_counter()
-    LogUtils.entry(logger, "rewrite", query=state["query"])
-
     manager = runtime.context.tracing.manager
 
     with NodeTimer(
         manager=manager,
+        logger=runtime.context.tracing.logger,
+        request_id=runtime.context.tracing.request_id,
         node_name=NodeNames.REWRITE,
         retry=state.get("retry_count", 0),
     ) as timer:
@@ -43,8 +40,6 @@ async def rewrite_node(
             decision="rewrite_complete",
             reason=f"Query rewritten: {result.rewritten_query}",
         )
-
-    LogUtils.exit(logger, "rewrite", start, rewritten=bool(result.rewritten_query))
 
     return {
         "rewritten_query": result.rewritten_query,

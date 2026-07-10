@@ -1,11 +1,9 @@
 import logging
-import time
 
 from langgraph.runtime import Runtime
 
 from app.langgraph.dependencies import SentinelContext
 from app.langgraph.state import SentinelState
-from app.core.logging_config import LogUtils
 from app.observability.timing import NodeTimer
 from app.observability.constants import NodeNames
 
@@ -17,18 +15,12 @@ async def planner_node(
     runtime: Runtime[SentinelContext],
 ):
 
-    start = time.perf_counter()
-
-    LogUtils.entry(
-        logger,
-        "planner",
-        query=state["query"],
-    )
-
     manager = runtime.context.tracing.manager
 
     with NodeTimer(
         manager=manager,
+        logger=runtime.context.tracing.logger,
+        request_id=runtime.context.tracing.request_id,
         node_name=NodeNames.PLANNER,
         retry=state.get("retry_count", 0),
     ) as timer:
@@ -46,13 +38,6 @@ async def planner_node(
             decision=decision.decision.planner_route,
             reason=decision.decision.reason,
         )
-
-    LogUtils.exit(
-        logger,
-        "planner",
-        start,
-        route=decision.decision.planner_route,
-    )
 
     return {
         "planner_route": decision.decision.planner_route,

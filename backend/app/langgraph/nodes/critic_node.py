@@ -1,11 +1,9 @@
 import logging
-import time
 
 from langgraph.runtime import Runtime
 
 from app.langgraph.state import SentinelState
 from app.langgraph.dependencies import SentinelContext
-from app.core.logging_config import LogUtils
 from app.observability.timing import NodeTimer
 from app.observability.constants import NodeNames
 
@@ -16,20 +14,29 @@ async def critic_node(
     runtime: Runtime[SentinelContext],
 ):
 
-    start = time.perf_counter()
-    LogUtils.entry(logger, "critic", retry=state["retry_count"])
+    manager = runtime.context.tracing.manager
 
     if state["retry_count"] >= state["max_retries"]:
-        LogUtils.exit(logger, "critic", start, decision="finish", reason="max_retries")
+        with NodeTimer(
+            manager=manager,
+            logger=runtime.context.tracing.logger,
+            request_id=runtime.context.tracing.request_id,
+            node_name=NodeNames.CRITIC,
+            retry=state.get("retry_count", 0),
+        ) as timer:
+            timer.set_decision(
+                decision="finish",
+                reason="max_retries",
+            )
         return {
             "critic_route": "finish",
             "critic_reason": "Maximum retries reached.",
         }
 
-    manager = runtime.context.tracing.manager
-
     with NodeTimer(
         manager=manager,
+        logger=runtime.context.tracing.logger,
+        request_id=runtime.context.tracing.request_id,
         node_name=NodeNames.CRITIC,
         retry=state.get("retry_count", 0),
     ) as timer:
@@ -49,8 +56,6 @@ async def critic_node(
             decision=critic_result.decision.critic_route,
             reason=critic_result.decision.reason,
         )
-
-    LogUtils.exit(logger, "critic", start, decision=critic_result.decision.critic_route)
 
     return {
         "critic_route": critic_result.decision.critic_route,

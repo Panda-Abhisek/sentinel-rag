@@ -1,11 +1,9 @@
 import logging
-import time
 
 from langgraph.runtime import Runtime
 
 from app.langgraph.dependencies import SentinelContext
 from app.langgraph.state import SentinelState
-from app.core.logging_config import LogUtils
 from app.observability.timing import NodeTimer
 from app.observability.constants import NodeNames
 
@@ -17,13 +15,12 @@ async def selector_node(
     runtime: Runtime[SentinelContext],
 ):
 
-    start = time.perf_counter()
-    LogUtils.entry(logger, "selector", candidates=len(state["candidate_answers"]))
-
     manager = runtime.context.tracing.manager
 
     with NodeTimer(
         manager=manager,
+        logger=runtime.context.tracing.logger,
+        request_id=runtime.context.tracing.request_id,
         node_name=NodeNames.SELECTOR,
         retry=state.get("retry_count", 0),
     ) as timer:
@@ -37,8 +34,6 @@ async def selector_node(
             decision="selection_complete",
             reason=f"Selected attempt index: {index}",
         )
-
-    LogUtils.exit(logger, "selector", start, selected=index)
 
     return {
         "answer": state["candidate_answers"][index],

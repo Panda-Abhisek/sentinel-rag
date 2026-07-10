@@ -1,4 +1,3 @@
-from dataclasses import asdict
 import logging
 import time
 
@@ -8,7 +7,7 @@ from app.langgraph.state import SentinelState
 from app.evaluation.models import LatencyMetrics
 from app.rag.source_mapper import SourceMapper
 from app.schemas.retrieval import QueryResponse
-from app.core.logging_config import LogUtils
+from app.observability.events import ObservabilityEvent
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +24,6 @@ class GraphService:
     ):
 
         start = time.perf_counter()
-        LogUtils.entry(logger, "GraphService.execute", query=question)
 
         initial_state: SentinelState = {
             "query": question,
@@ -58,6 +56,19 @@ class GraphService:
             "reflection": None
         }
 
+        runtime_logger = self.dependencies.tracing.logger
+
+        runtime_logger.emit(
+            ObservabilityEvent(
+                event="graph_started",
+                request_id=self.dependencies.tracing.request_id,
+                data={
+                    "query": question,
+                    "top_k": top_k,
+                },
+            )
+        )
+
         final_state = await graph.ainvoke(
             initial_state,
             context=self.dependencies
@@ -67,8 +78,20 @@ class GraphService:
             confidence=final_state["evaluation"].answer.overall_score,
             selected_attempt=final_state["selected_answer_index"],
         )
-        summary_dict = asdict(summary)
         
+        logger.info("Summary: \n%s", summary)
+        
+        runtime_logger.emit(
+            ObservabilityEvent(
+                event="graph_finished",
+                request_id=self.dependencies.tracing.request_id,
+                data={
+                    "summary": summary.to_dict()
+                },
+            )
+        )
+        
+        summary_dict = summary.to_dict()
         logger.info("Execution Summary: %s",summary_dict)
 
         total_time = (
@@ -76,8 +99,6 @@ class GraphService:
         ) * 1000
 
         final_state["total_ms"] = total_time
-
-        LogUtils.exit(logger, "GraphService.execute", start, total_ms=total_time)
 
         return QueryResponse(
             answer=final_state["answer"],
