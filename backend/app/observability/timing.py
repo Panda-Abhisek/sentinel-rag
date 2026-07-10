@@ -32,7 +32,7 @@ class NodeTimer:
         self.logger.emit(ObservabilityEvent(
             event="node_started",
             request_id=self.request_id,
-            data={"node_name": self.node_name, "retry": self.retry},
+            data={"node": self.node_name, "retry": self.retry},
         ))
         return self
 
@@ -50,10 +50,13 @@ class NodeTimer:
                 self.node_name,
                 exc_value,
             )
+            node_data = self._node.to_dict()
+            node_data["error"] = str(exc_value)
             self.logger.emit(ObservabilityEvent(
                 event="node_failed",
                 request_id=self.request_id,
-                data={"node": self._node.to_dict()},
+                level="ERROR",
+                data=node_data,
             ))
             return False
 

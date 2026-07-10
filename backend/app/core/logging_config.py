@@ -1,4 +1,6 @@
+import json
 import logging
+import sys
 import time
 import uuid
 from contextvars import ContextVar
@@ -16,15 +18,30 @@ class CorrelationFilter(logging.Filter):
         return True
 
 
+class _JSONFormatter(logging.Formatter):
+    def format(self, record):
+        return record.getMessage()
+
+
 def setup_logging() -> None:
     logging.basicConfig(
         level=logging.INFO,
         format=LOG_FORMAT,
         force=True,
+        stream=sys.stdout,
     )
 
     for handler in logging.getLogger().handlers:
         handler.addFilter(CorrelationFilter())
+
+    json_handler = logging.StreamHandler(sys.stdout)
+    json_handler.setFormatter(_JSONFormatter())
+    json_handler.setLevel(logging.INFO)
+
+    json_logger = logging.getLogger("observability")
+    json_logger.propagate = False
+    json_logger.handlers.clear()
+    json_logger.addHandler(json_handler)
 
     noisy_loggers = (
         "httpx",

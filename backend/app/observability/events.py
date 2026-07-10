@@ -13,6 +13,8 @@ class ObservabilityEvent:
 
     request_id: str
 
+    level: str = "INFO"
+
     timestamp: datetime = field(
         default_factory=lambda: datetime.now(timezone.utc)
     )
