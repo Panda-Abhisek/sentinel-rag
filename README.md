@@ -9,7 +9,7 @@ SentinelRAG is designed as a long-term AI Engineering portfolio project demonstr
 
 # 🚀 Current Status
 
-**Version:** `v0.5.0`
+**Version:** `v0.6.0`
 
 ## ✅ Week 1 Completed
 
@@ -92,6 +92,23 @@ SentinelRAG is designed as a long-term AI Engineering portfolio project demonstr
 - Conditional routing with retry limits (max_retries: 2)
 - Modular node architecture with dependency-injected context via `SentinelContext`
 - State graph visualization script (`visualize_graph.py`)
+
+## ✅ Week 6 Completed
+
+### Observability & Dashboard API
+
+- Structured logging with `ObservabilityEvent` and JSON emission
+- Per-node timing via `NodeTimer` context manager
+- Token usage tracking across all LLM calls
+- `ExecutionSummaryManager` — request-level execution tracking
+- Error diagnostics — `exception_type`, `error`, configurable `stacktrace`
+- Recovery tracking — `record_recovery` when critic triggers rewrite
+- Structured `node_failed` and `node_recovered` log events
+- LangSmith integration with `request_id` correlation
+- `ObservabilityMapper` — converts internal models to API schemas
+- Dashboard-ready `observability` field in `QueryResponse`
+- Configurable stacktrace inclusion via `OBSERVABILITY_INCLUDE_STACKTRACE`
+- Graph visualizer with Mermaid and PNG export
 
 ---
 
@@ -321,7 +338,10 @@ app/
 │       ├── critic.txt
 │       ├── planner.txt
 │       └── reflection.txt
-|
+│
+├── models
+│   └── LLMResponse.py
+│
 ├── __init__.py
 ├── main.py
 |
@@ -332,12 +352,29 @@ app/
 │   ├── rewrite_prompt_builder.py
 │   └── source_mapper.py
 |
+├── observability/
+│   ├── __init__.py
+│   ├── constants.py
+│   ├── events.py
+│   ├── exceptions.py
+│   ├── execution_summary.py
+│   ├── graph_visualizer.py
+│   ├── langsmith.py
+│   ├── mapper.py
+│   ├── metrics.py
+│   ├── models.py
+│   ├── structured_logger.py
+│   ├── timing.py
+│   └── tracing.py
+│
 ├── schemas
 │   ├── index.py
+│   ├── observability.py
 │   └── retrieval.py
 |
 ├── scripts
 │   ├── benchmark.py
+│   ├── export_graph.py
 │   ├── test_graph.py
 │   └── visualize_graph.py
 |
@@ -350,6 +387,7 @@ app/
 │   ├── graph_service.py
 │   ├── index_service.py
 │   ├── llm_service.py
+│   ├── models.py
 │   ├── planner_service.py
 │   ├── query_rewriter_service.py
 │   ├── reflection_service.py
@@ -360,8 +398,11 @@ app/
 ├── utils
 │   ├── file_handler.py
 │   
-└── vectorstore
-    └── qdrant_client.py
+├── vectorstore
+│   └── qdrant_client.py
+│
+├── docs
+│   └── graph.md
 
 ```
 
@@ -429,6 +470,19 @@ app/
 * Multi-candidate answer accumulation
 * Conditional routing with retry limits
 * Dependency-injected node context
+
+### Observability
+
+* Structured JSON logging with `ObservabilityEvent`
+* Per-node timing via `NodeTimer` context manager
+* Token usage tracking across all LLM calls
+* `ExecutionSummaryManager` for request-level tracking
+* Error diagnostics — `exception_type`, `error`, `stacktrace`
+* Recovery tracking — `record_recovery` for rewrite actions
+* LangSmith integration with `request_id` correlation
+* Configurable stacktrace inclusion via `OBSERVABILITY_INCLUDE_STACKTRACE`
+* Dashboard-ready `ObservabilityResponse` Pydantic schema
+* Graph visualization with Mermaid and PNG export
 ---
 
 # ✨ Features
@@ -480,6 +534,18 @@ app/
 * Dependency-injected context per execution
 * ASCII and Mermaid graph visualization
 
+## Observability
+
+* Structured JSON logging with request correlation
+* Per-node timing and duration tracking
+* Token usage tracking per LLM call
+* Request-level execution summaries
+* Error diagnostics with exception type and stacktrace
+* Recovery action tracking for self-healing workflows
+* LangSmith trace integration
+* Dashboard-ready API response schemas
+* Configurable stacktrace inclusion for dev/production
+
 ---
 
 # 📡 API
@@ -520,29 +586,51 @@ GET /health
 ```
 POST /query
 ```
-Retrievs answers
+Retrieves answers with full observability data.
+
 ### Response
 
 ```json
 {
-  "response": {
-    "answer": "...",
-    "sources": [],
-    "evaluation": {},
-    "latency": {}
-  },
-  "healing": {
-    "original_query": "...",
-    "rewritten_query": "...",
-    "healing_attempted": true,
-    "healing_success": true,
-    "retry_count": 1,
-    "retry_reason": "low_answer_quality",
-    "selected_answer": "healed",
-    "winner_reason": "higher_answer_quality",
-    "original_score": 0.63,
-    "healed_score": 0.91,
-    "latency_overhead_ms": 812
+  "answer": "Dependency injection is a design pattern...",
+  "sources": [],
+  "evaluation": {},
+  "latency": {},
+  "reflection": {},
+  "observability": {
+    "request_id": "8285b68f-9be2-4bf6-a3cb-23dd3537c752",
+    "graph_path": [
+      "planner",
+      "retrieve",
+      "generate",
+      "evaluate",
+      "critic",
+      "selector",
+      "reflection"
+    ],
+    "total_latency_ms": 15512.0,
+    "retries": 0,
+    "final_confidence": 0.95,
+    "selected_attempt": 0,
+    "token_usage": {
+      "prompt_tokens": 3198,
+      "completion_tokens": 1219,
+      "total_tokens": 4417,
+      "estimated_cost": 0.0
+    },
+    "nodes": [
+      {
+        "node_name": "planner",
+        "duration_ms": 1445.0,
+        "success": true,
+        "retry": 0,
+        "decision": "retrieve",
+        "reason": "Direct retrieval selected.",
+        "exception_type": null,
+        "recovery_action": null,
+        "recovered": false
+      }
+    ]
   }
 }
 ```
@@ -644,12 +732,18 @@ http://127.0.0.1:8000/docs
 * Reflection agent
 * State graph visualization
 
-## 🚧 Week 6
+## ✅ Week 6
 
 * Observability & monitoring
-* Production deployment preparation
-* Performance benchmarking
-* Frontend integration
+* Structured logging with ObservabilityEvent
+* Per-node timing via NodeTimer
+* Token usage tracking
+* Execution summaries with ExecutionSummaryManager
+* Error diagnostics and recovery tracking
+* LangSmith integration
+* Dashboard-ready ObservabilityResponse API
+* Configurable stacktrace inclusion
+* Graph visualizer with Mermaid and PNG export
 
 ---
 
