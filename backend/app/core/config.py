@@ -40,6 +40,9 @@ class Settings(BaseSettings):
 
     DEBUG: bool = True
 
+    # Observability
+    OBSERVABILITY_INCLUDE_STACKTRACE: bool = True
+
     UPLOAD_DIR: str = "temp_uploads"
     
     # Evaluation

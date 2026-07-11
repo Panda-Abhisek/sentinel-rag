@@ -24,6 +24,10 @@ class NodeExecution:
     decision: str | None = None
     reason: str | None = None
     error: str | None = None
+    exception_type: str | None = None
+    stacktrace: str | None = None
+    recovery_action: str | None = None
+    recovered: bool = False
     token_usage: TokenUsage = field(default_factory=TokenUsage)
     metadata: dict[str, Any] = field(default_factory=dict)
 

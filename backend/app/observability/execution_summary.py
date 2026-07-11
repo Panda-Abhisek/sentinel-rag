@@ -1,7 +1,12 @@
+import logging
+import traceback
 from dataclasses import asdict
 from datetime import datetime, timezone
 
+from app.core.config import settings
 from app.observability.models import ExecutionSummary, NodeExecution, TokenUsage
+
+logger = logging.getLogger(__name__)
 
 class ExecutionSummaryManager:
     def __init__(self, request_id: str):
@@ -72,6 +77,8 @@ class ExecutionSummaryManager:
 
         node.success = False
         node.error = str(error)
+        node.exception_type = type(error).__name__
+        node.stacktrace = traceback.format_exc() if settings.OBSERVABILITY_INCLUDE_STACKTRACE else None
 
         node.ended_at = datetime.now(timezone.utc)
         node.duration_ms = (
@@ -79,6 +86,47 @@ class ExecutionSummaryManager:
         ).total_seconds() * 1000
 
         del self._active_nodes[node_name]
+
+        logger.warning(
+            "node_failed",
+            extra={
+                "event": "node_failed",
+                "request_id": self.summary.request_id,
+                "node": {
+                    "node_name": node.node_name,
+                    "exception_type": node.exception_type,
+                    "error": node.error,
+                    "recovered": node.recovered,
+                },
+            },
+        )
+
+    def record_recovery(
+        self,
+        node_name: str,
+        action: str,
+    ) -> None:
+        """
+        Record a recovery action taken for a node.
+        """
+
+        node = self._active_nodes.get(node_name)
+
+        if node is None:
+            return
+
+        node.recovery_action = action
+        node.recovered = True
+
+        logger.info(
+            "node_recovered",
+            extra={
+                "event": "node_recovered",
+                "request_id": self.summary.request_id,
+                "node": node_name,
+                "action": action,
+            },
+        )
 
     def add_token_usage(
         self,
