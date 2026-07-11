@@ -53,6 +53,9 @@ async def critic_node(
             reason=critic_result.decision.reason,
         )
 
+        if critic_result.decision.critic_route == "rewrite":
+            manager.record_recovery("critic", "rewrite")
+
     return {
         "critic_route": critic_result.decision.critic_route,
         "critic_reason": critic_result.decision.reason,
