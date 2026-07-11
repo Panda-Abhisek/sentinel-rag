@@ -9,6 +9,7 @@ from app.rag.source_mapper import SourceMapper
 from app.schemas.retrieval import QueryResponse
 from app.observability.events import ObservabilityEvent
 from app.observability.langsmith import trace_graph
+from app.observability.mapper import ObservabilityMapper
 
 logger = logging.getLogger(__name__)
 
@@ -118,4 +119,5 @@ class GraphService:
                 total_ms=final_state["total_ms"],
             ),
             reflection=final_state["reflection"],
+            observability=ObservabilityMapper.to_response(summary),
         )
