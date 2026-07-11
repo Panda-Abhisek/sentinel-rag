@@ -7,7 +7,6 @@ from app.rag.evaluation_prompt_builder import EvaluationPromptBuilder
 from app.services.evaluation_llm import EvaluationLLM
 from app.core.config import settings
 from app.evaluation.json_parser import parse_json_response
-from app.core.logging_config import LogUtils
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +23,7 @@ class HallucinationDetector:
     ) -> HallucinationEvaluation:
 
         start = time.perf_counter()
-        LogUtils.entry(logger, "HallucinationDetector.evaluate")
+        logger.info("Entering HallucinationDetector.evaluate")
 
         contexts = self._extract_contexts(retrieval_results)
 
@@ -42,7 +41,7 @@ class HallucinationDetector:
             response.content,
         )
 
-        LogUtils.exit(logger, "HallucinationDetector.evaluate", start)
+        logger.info("Exiting HallucinationDetector.evaluate | duration_ms=%.2f", (time.perf_counter() - start) * 1000)
 
         return evaluation
 

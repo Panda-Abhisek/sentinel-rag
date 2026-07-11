@@ -1,7 +1,7 @@
 import logging
 import time
 
-from app.core.logging_config import LogUtils
+from app.services.models import RewriteResult
 
 logger = logging.getLogger(__name__)
 
@@ -16,10 +16,10 @@ class QueryRewriterService:
         question: str,
         answer: str | None = None,
         evaluation=None,
-    ) -> str:
+    ) -> RewriteResult:
 
         start = time.perf_counter()
-        LogUtils.entry(logger, "QueryRewriterService.rewrite")
+        logger.info("Entering QueryRewriterService.rewrite")
 
         if answer is None or evaluation is None:
 
@@ -59,14 +59,26 @@ class QueryRewriterService:
                 - Return ONLY the rewritten query.
                 """
 
-        rewritten_query = await self.llm.generate(prompt)
+        llm_response = await self.llm.generate(prompt)
+        logger.info("Query rewrite response:\n%s", llm_response)
 
-        rewritten_query = rewritten_query.strip().strip('"')
+        content = llm_response.content
+        if "<think>" in content:
+            content = content.split("</think>")[-1].strip()
+
+        rewritten_query = content.strip()
+        logger.info("Query rewrite result:\n%s", rewritten_query)
 
         if not rewritten_query:
             logger.warning("Rewriter returned an empty query. Using original query.")
-            LogUtils.exit(logger, "QueryRewriterService.rewrite", start, rewritten=False)
-            return question
+            logger.info("Exiting QueryRewriterService.rewrite | duration_ms=%.2f | rewritten=%s", (time.perf_counter() - start) * 1000, False)
+            return RewriteResult(
+                rewritten_query=question,
+                token_usage=llm_response.usage,
+            )
 
-        LogUtils.exit(logger, "QueryRewriterService.rewrite", start, rewritten=True)
-        return rewritten_query
+        logger.info("Exiting QueryRewriterService.rewrite | duration_ms=%.2f | rewritten=%s", (time.perf_counter() - start) * 1000, True)
+        return RewriteResult(
+            rewritten_query=rewritten_query,
+            token_usage=llm_response.usage
+        )

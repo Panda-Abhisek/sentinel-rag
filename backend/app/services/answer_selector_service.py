@@ -1,4 +1,5 @@
 import logging
+import time
 
 from app.evaluation.models import EvaluationReport
 
@@ -12,6 +13,9 @@ class AnswerSelectorService:
         answers: list[str],
         evaluations: list[EvaluationReport],
     ) -> int:
+
+        start = time.perf_counter()
+        logger.info("Entering AnswerSelectorService.select | candidates=%d", len(answers))
 
         best_index = 0
         best_score = float("-inf")
@@ -31,5 +35,5 @@ class AnswerSelectorService:
                 best_score = score
                 best_index = i
 
-        logger.info("Selected candidate %d with score=%.2f", best_index, best_score)
+        logger.info("Exiting AnswerSelectorService.select | duration_ms=%.2f | selected=%d | score=%.2f", (time.perf_counter() - start) * 1000, best_index, best_score)
         return best_index

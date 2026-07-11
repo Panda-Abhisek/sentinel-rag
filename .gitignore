@@ -9,3 +9,4 @@ pytest.ini
 htmlcov
 .pytest_cache
 tests
+*.png

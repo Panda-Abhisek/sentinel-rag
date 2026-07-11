@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 
 from app.evaluation.models import EvaluationReport, LatencyMetrics
+from app.schemas.observability import ObservabilityResponse
 
 class QueryRequest(BaseModel):
     question: str
@@ -18,3 +19,4 @@ class QueryResponse(BaseModel):
     sources: list[SourceDocument]
     evaluation: EvaluationReport | None = None
     latency: LatencyMetrics
+    observability: ObservabilityResponse

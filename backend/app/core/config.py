@@ -40,6 +40,9 @@ class Settings(BaseSettings):
 
     DEBUG: bool = True
 
+    # Observability
+    OBSERVABILITY_INCLUDE_STACKTRACE: bool = True
+
     UPLOAD_DIR: str = "temp_uploads"
     
     # Evaluation
@@ -50,6 +53,11 @@ class Settings(BaseSettings):
 
     EVALUATION_SCORE_HIGH: float = 0.85
     EVALUATION_SCORE_MEDIUM: float = 0.65
+
+    # LangSmith
+    LANGSMITH_API_KEY: Optional[str] = None
+    LANGSMITH_TRACING: bool = False
+    LANGSMITH_PROJECT: str = "SentinelRAG"
 
     @property
     def QDRANT_URL(self) -> str:

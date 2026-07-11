@@ -4,15 +4,10 @@ import time
 from pydantic import BaseModel
 from typing import Literal
 
-from app.core.logging_config import LogUtils
+from app.services.models import PlannerResult
+from app.langgraph.models import PlannerDecision
 
 logger = logging.getLogger(__name__)
-
-
-class PlannerDecision(BaseModel):
-    planner_route: Literal["retrieve", "rewrite"]
-    reason: str
-
 
 class PlannerService:
 
@@ -22,10 +17,10 @@ class PlannerService:
     async def plan(
         self,
         question: str,
-    ) -> PlannerDecision:
+    ) -> PlannerResult:
 
         start = time.perf_counter()
-        LogUtils.entry(logger, "PlannerService.plan")
+        logger.info("Entering PlannerService.plan")
 
         prompt = f"""
             You are the Planner Agent for an enterprise Retrieval-Augmented Generation (RAG) system.
@@ -66,16 +61,28 @@ class PlannerService:
         response = await self.llm.generate(prompt)
 
         logger.info("Planner response:\n%s", response)
+        
+        logger.info("Planner response content:\n%s", response.content)
 
         try:
-            decision = PlannerDecision.model_validate_json(response)
-            LogUtils.exit(logger, "PlannerService.plan", start, route=decision.planner_route)
-            return decision
+            ans = response.content
+            if "<think>" in ans:
+                ans = ans.split("</think>")[-1].strip()
+            decision = PlannerDecision.model_validate_json(ans)
+            logger.info("Planner Decision:\n%s", decision)
+            logger.info("Exiting PlannerService.plan | duration_ms=%.2f | route=%s", (time.perf_counter() - start) * 1000, decision.planner_route)
+            return PlannerResult(
+                decision=decision,
+                token_usage=response.usage,
+            )
 
         except Exception:
             logger.exception("Failed to parse planner output.")
-            LogUtils.exit(logger, "PlannerService.plan", start, route="fallback")
-            return PlannerDecision(
-                planner_route="retrieve",
-                reason="Planner output could not be parsed. Falling back to direct retrieval.",
+            logger.info("Exiting PlannerService.plan | duration_ms=%.2f | route=%s", (time.perf_counter() - start) * 1000, "fallback")
+            return PlannerResult(
+                decision=PlannerDecision(
+                    planner_route="retrieve",
+                    reason="Planner output could not be parsed. Falling back to direct retrieval.",
+                ),
+                token_usage=response.usage,
             )

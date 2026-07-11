@@ -2,7 +2,6 @@ import asyncio
 import logging
 import time
 
-from app.core.logging_config import LogUtils
 from app.evaluation.models import EvaluationReport
 from app.evaluation.answer_evaluator import AnswerEvaluator
 from app.evaluation.retrieval_evaluator import RetrievalEvaluator
@@ -38,7 +37,7 @@ class EvaluationService:
     ) -> EvaluationReport:
 
         start = time.perf_counter()
-        LogUtils.entry(logger, "EvaluationService.evaluate_pipeline")
+        logger.info("Entering EvaluationService.evaluate_pipeline")
 
         retrieval_evaluation = self._retrieval_evaluator.evaluate(
             retrieval_results
@@ -56,7 +55,7 @@ class EvaluationService:
             ),
         )
 
-        LogUtils.exit(logger, "EvaluationService.evaluate_pipeline", start)
+        logger.info("Exiting EvaluationService.evaluate_pipeline | duration_ms=%.2f", (time.perf_counter() - start) * 1000)
 
         return EvaluationReport(
             retrieval=retrieval_evaluation,

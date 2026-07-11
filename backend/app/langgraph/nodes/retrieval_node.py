@@ -1,13 +1,9 @@
-import logging
-import time
-
 from langgraph.runtime import Runtime
 
 from app.langgraph.dependencies import SentinelContext
 from app.langgraph.state import SentinelState
-from app.core.logging_config import LogUtils
-
-logger = logging.getLogger(__name__)
+from app.observability.timing import NodeTimer
+from app.observability.constants import NodeNames
 
 
 async def retrieval_node(
@@ -15,19 +11,26 @@ async def retrieval_node(
     runtime: Runtime[SentinelContext],
 ):
 
-    start = time.perf_counter()
-    LogUtils.entry(logger, "retrieval", query=state["query"])
+    manager = runtime.context.tracing.manager
 
-    docs = runtime.context.retrieval.retrieve_documents(
-        question=state["query"],
-        top_k=state["top_k"],
-    )
+    with NodeTimer(
+        manager=manager,
+        logger=runtime.context.tracing.logger,
+        request_id=runtime.context.tracing.request_id,
+        node_name=NodeNames.RETRIEVAL,
+        retry=state.get("retry_count", 0),
+    ) as timer:
 
-    retrieval_ms = (time.perf_counter() - start) * 1000
+        documents =  runtime.context.retrieval.retrieve_documents(
+            question=state["query"], top_k=state["top_k"]
+        )
 
-    LogUtils.exit(logger, "retrieval", start, docs=len(docs))
+        timer.set_decision(
+            decision="retrieval_complete",
+            reason=f"Retrieved {len(documents)} documents",
+        )
 
     return {
-        "retrieved_documents": docs,
-        "retrieval_ms": retrieval_ms,
+        "retrieved_documents": documents,
+        "retrieval_ms": state["retrieval_ms"],
     }
