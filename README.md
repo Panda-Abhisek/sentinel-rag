@@ -9,7 +9,7 @@ SentinelRAG is designed as a long-term AI Engineering portfolio project demonstr
 
 # 🚀 Current Status
 
-**Version:** `v0.6.0`
+**Version:** `v0.7.0`
 
 ## ✅ Week 1 Completed
 
@@ -109,6 +109,26 @@ SentinelRAG is designed as a long-term AI Engineering portfolio project demonstr
 - Dashboard-ready `observability` field in `QueryResponse`
 - Configurable stacktrace inclusion via `OBSERVABILITY_INCLUDE_STACKTRACE`
 - Graph visualizer with Mermaid and PNG export
+
+## ✅ Week 7 Completed
+
+### Sentinel Studio — Frontend Dashboard
+
+- React 19 + Vite SPA named **Sentinel Studio**
+- `/chat` — query interface with starter prompts, live loading states, run result panels
+- `/documents` — PDF upload and indexing with progress feedback
+- `/trace` — full-page LangGraph execution trace viewer with graph map
+- `/dashboard` — observability metrics (latency, tokens, retries, confidence) with bar charts
+- `/settings` — read-only configuration display
+- `AnswerCard` — renders generated answers with think-block (`<think>`) parsing
+- `ReasoningTrace` — collapsible accordion for diagnostic reasoning context
+- `TraceRail` — vertical node-by-node execution rail with success/failure icons, retry badges, duration
+- Fetch wrapper with configurable `VITE_API_URL` and Vite dev proxy to backend
+- `askQuestion()` API function for `/api/query/` integration
+- Dark theme with CSS custom properties, Google Fonts (DM Mono, Manrope, Space Grotesk)
+- Responsive layout with collapsible sidebar and mobile breakpoint
+- Accessibility: reduced-motion support, focus-visible outlines, disabled button states
+- CORS middleware added to FastAPI backend for Vite dev server origins
 
 ---
 
@@ -270,22 +290,67 @@ Answer Evaluation          Hallucination Detection
              └───────────────────┘
                        │
                        ▼
-                Final Answer
+                 Final Answer
+```
+## Sentinel Studio (Frontend)
+```
+                  Browser
+                    │
+                    ▼
+              Vite Dev Server ──── proxy /api ────► FastAPI Backend
+                    │
+                    ▼
+            React BrowserRouter
+                    │
+        ┌───────────┼───────────┬──────────────┐
+        ▼           ▼           ▼              ▼
+     /chat      /documents   /trace      /dashboard
+        │           │           │              │
+        ▼           ▼           ▼              ▼
+  askQuestion()  upload()   TraceRail    MetricCards
+        │           │        + GraphMap   + BarCharts
+        ▼           ▼           │              │
+   AnswerCard     Success      ▼              ▼
+   + TraceRail    Feedback   Node-by-node  Observability
+   + SourcesPanel             execution    summary
 ```
 ---
 
 # 📁 Project Structure
 
 ```
-backend/
+Sentinel_RAG/
 
-tests/
-├── conftest.py
-├── evaluation
-│   ├── test_confidence_scorer.py
-│   ├── test_metrics_calculator.py
-│   ├── test_retrieval_evaluator.py
-│   └── test_score_level.py
+├── frontend/                         # Sentinel Studio — React SPA
+│   ├── index.html
+│   ├── package.json
+│   ├── vite.config.js
+│   └── src/
+│       ├── main.jsx                  # Entry point with BrowserRouter
+│       ├── App.jsx                   # Shell layout, sidebar, routes
+│       ├── styles.css                # Global dark-theme design system
+│       ├── api/
+│       │   ├── client.js             # Fetch wrapper with base URL
+│       │   └── chat.js               # askQuestion() for /api/query/
+│       ├── components/
+│       │   ├── RunPanels.jsx         # AnswerCard + ReasoningTrace
+│       │   └── TraceRail.jsx         # Node-by-node execution rail
+│       └── pages/
+│           ├── Chat.jsx              # Query interface + run results
+│           ├── Documents.jsx         # PDF upload and indexing
+│           ├── Trace.jsx             # Full-page execution trace
+│           ├── Dashboard.jsx         # Observability metrics + charts
+│           └── Settings.jsx          # Configuration display
+│
+├── backend/
+│
+├── tests/
+│   ├── conftest.py
+│   ├── evaluation
+│   │   ├── test_confidence_scorer.py
+│   │   ├── test_metrics_calculator.py
+│   │   ├── test_retrieval_evaluator.py
+│   │   └── test_score_level.py
 
 app/
 |
@@ -415,6 +480,15 @@ app/
 * FastAPI
 * Pydantic
 * Python 3.14
+
+### Frontend
+
+* React 19
+* Vite
+* react-router-dom v6
+* Recharts
+* Lucide React icons
+* react-markdown + remark-gfm
 
 ### RAG Framework
 
@@ -546,6 +620,18 @@ app/
 * Dashboard-ready API response schemas
 * Configurable stacktrace inclusion for dev/production
 
+## Sentinel Studio (Frontend)
+
+* Chat interface with starter prompts and live loading states
+* PDF document upload and indexing
+* Full-page LangGraph execution trace viewer
+* Observability dashboard with latency bar charts
+* Node-by-node execution rail with retry badges
+* Answer display with think-block parsing
+* Collapsible sidebar navigation
+* Dark theme with responsive layout
+* Accessibility support (reduced-motion, focus-visible)
+
 ---
 
 # 📡 API
@@ -643,44 +729,33 @@ Clone the repository
 
 ```bash
 git clone <repository-url>
-cd Sentinel_RAG/backend
+cd Sentinel_RAG
 ```
 
-Create a virtual environment
+### Backend
 
 ```bash
+cd backend
 python -m venv venv
-```
-
-Activate the environment
-
-```bash
 source venv/bin/activate
-```
-
-Install dependencies
-
-```bash
 pip install -r requirements.txt
-```
-
-Start Qdrant
-
-```bash
 docker compose up -d
-```
-
-Run the backend
-
-```bash
 uvicorn app.main:app --reload
 ```
 
-Swagger UI
+Swagger UI: `http://127.0.0.1:8000/docs`
 
+### Frontend (Sentinel Studio)
+
+```bash
+cd frontend
+npm install
+npm run dev
 ```
-http://127.0.0.1:8000/docs
-```
+
+Sentinel Studio: `http://localhost:5173`
+
+The Vite dev server proxies `/api` requests to the backend at `http://localhost:8000`.
 
 ---
 
@@ -693,7 +768,7 @@ http://127.0.0.1:8000/docs
 * Embedding generation
 * Qdrant integration
 
-## 🚧 Week 2
+## ✅ Week 2
 
 * Semantic retrieval
 * Query endpoint
@@ -744,6 +819,19 @@ http://127.0.0.1:8000/docs
 * Dashboard-ready ObservabilityResponse API
 * Configurable stacktrace inclusion
 * Graph visualizer with Mermaid and PNG export
+
+## ✅ Week 7
+
+* Sentinel Studio — React frontend dashboard
+* Chat interface with query input and run results
+* PDF document upload and indexing page
+* Full-page LangGraph execution trace viewer
+* Observability dashboard with metric cards and bar charts
+* Node-by-node execution rail with retry badges
+* Answer display with think-block parsing
+* Collapsible sidebar with responsive layout
+* Dark theme with custom design system
+* CORS middleware for backend integration
 
 ---
 

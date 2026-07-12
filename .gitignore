@@ -10,3 +10,7 @@ htmlcov
 .pytest_cache
 tests
 *.png
+.frontend/node_modules/
+.frontend/dist/
+.agents
+.codex
