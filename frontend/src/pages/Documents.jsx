@@ -1,0 +1,9 @@
+import { useState } from "react";
+import { CheckCircle2, FileUp, LoaderCircle, Upload } from "lucide-react";
+import { request } from "../api/client";
+
+export default function Documents() {
+  const [file, setFile] = useState(null); const [result, setResult] = useState(null); const [error, setError] = useState(""); const [loading, setLoading] = useState(false);
+  async function upload(event) { event.preventDefault(); if (!file) return; setLoading(true); setError(""); try { const data = new FormData(); data.append("file", file); setResult(await request("/documents/upload", { method: "POST", body: data })); } catch (err) { setError(err.message); } finally { setLoading(false); } }
+  return <div className="page detail-page"><div className="page-title"><span className="eyebrow">KNOWLEDGE BASE</span><h1>Documents</h1><p>Add PDF sources to the collection that powers Sentinel’s retrieval layer.</p></div><form className="upload-zone panel" onSubmit={upload}><FileUp size={30} /><h2>Index a PDF document</h2><p>Sentinel extracts, chunks, embeds, and stores its content in Qdrant.</p><input id="pdf" type="file" accept="application/pdf" onChange={(event) => setFile(event.target.files?.[0] || null)} /><label htmlFor="pdf">{file ? file.name : "Choose a PDF"}</label><button className="run-button" disabled={!file || loading}>{loading ? <LoaderCircle className="spin" size={18} /> : <Upload size={17} />}{loading ? "Indexing…" : "Index document"}</button></form>{error && <div className="error-panel"><strong>Document was not indexed.</strong> {error}</div>}{result && <div className="success-panel"><CheckCircle2 size={21} /><div><strong>{result.filename} is ready for retrieval.</strong><span>{result.chunks} chunks indexed into {result.collection}.</span></div></div>}<p className="api-note">Document inventory and deletion will appear here when their backend endpoints are added.</p></div>;
+}
