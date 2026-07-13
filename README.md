@@ -132,6 +132,30 @@ SentinelRAG is designed as a long-term AI Engineering portfolio project demonstr
 
 ---
 
+# 🖼️ Demo
+
+Full-resolution screenshots of Sentinel Studio are available in the [`screenshots/`](./screenshots/) directory.
+
+### Chat Interface
+
+![Chat Page](./screenshots/q1-chat-page-empty.png)
+
+### Query with Full Results
+
+![Query Results — "What's FastAPI?"](./screenshots/q4-chat-full-results.png)
+
+The query results panel includes a generated answer, quality evaluation with confidence scoring, a live agent execution trace with per-node timing, and retrieval evidence with source citations.
+
+### Documents Page
+
+![Documents Upload](./screenshots/q5-documents-page-empty.png)
+
+### Settings
+
+![Settings Page](./screenshots/q8-settings-page.png)
+
+---
+
 # 🏗️ Architecture
 ## Ingestion Pipeline
 ```
